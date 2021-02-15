@@ -3,7 +3,6 @@ import torch
 class Config:
     global device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # device = "cpu"
     data_dir = 'data/agaricus-lepiota.data'
     batch_size = 64
     num_batches = 64

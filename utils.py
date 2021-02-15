@@ -30,7 +30,7 @@ def read_data():
     return X_, Y_
 
 def write_weight_histograms(writer, net, step):
-    ''' Logging tool for BNN '''
+    ''' Logging tool for BNN Bandit '''
     writer.add_histogram('histogram/w1_mu', net.l1.weight_mu,step)
     writer.add_histogram('histogram/w1_rho', net.l1.weight_rho,step)
     writer.add_histogram('histogram/w2_mu', net.l2.weight_mu,step)
@@ -45,10 +45,15 @@ def write_weight_histograms(writer, net, step):
     writer.add_histogram('histogram/b3_rho', net.l3.bias_rho,step)
 
 def write_loss_scalars(writer, step, loss, regret):
-    ''' Logging tool for BNN '''
+    ''' Logging tool for BNN Bandit '''
     writer.add_scalar('logs/loss', loss[0], step)
     writer.add_scalar('logs/complexity_cost', loss[2]-loss[1], step)
     writer.add_scalar('logs/log_prior', loss[1], step)
     writer.add_scalar('logs/log_variational_posterior', loss[2], step)
     writer.add_scalar('logs/negative_log_likelihood', loss[3], step)
+    writer.add_scalar('logs/cumulative_regret', regret, step)
+
+def write_loss(writer, step, loss, regret):
+    ''' Logging tool for e-greedy MLP '''
+    writer.add_scalar('logs/loss', loss, step)
     writer.add_scalar('logs/cumulative_regret', regret, step)

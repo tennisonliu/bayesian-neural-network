@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from net import BayesianNetwork
 from config import *
 
 class MushroomBandit():
@@ -12,26 +11,23 @@ class MushroomBandit():
         self.batch_size = bandit_params['batch_size']
         self.num_batches = bandit_params['num_batches']
         self.lr = bandit_params['lr']
-        self.epsilon = bandit_params['epsilon'] if 'epsilon' in bandit_params else 0
+        self.epsilon = 0
         self.cumulative_regrets = [0]
         self.buffer_x, self.buffer_y = [], []
-        self.x, self.y = torch.FloatTensor(x), torch.FloatTensor(y)   # pass by pointer
+        self.x, self.y = x, y
         self.init_net()
+        self.init_buffer()
     
     def init_net(self):
-        ####
-        # raise NotIMplementedError
-        ####
-        model_params = {
-            'input_shape': self.x.shape[1]+2,
-            'classes': 1 if len(self.y.shape)==1 else self.y.shape[1],
-            'num_batches': self.num_batches,
-            'batch_size': self.batch_size
-        }
-        print("BNN Parameters: ")
-        print(model_params)
-        self.net = BayesianNetwork(model_params).to(device)
-        self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        raise NotImplementedError
+
+    def init_buffer(self):
+        for i in np.random.choice(range(len(self.x)), self.buffer_size):
+            eat = np.random.rand() > 0.5
+            action = [1, 0] if eat else [0, 1]
+            self.buffer_x.append(np.concatenate((self.x[i], action)))
+            self.buffer_y.append(self.get_agent_reward(eat, self.y[i]))
+        print(f'Size of buffer after initialisation: {len(self.buffer_x)}, {len(self.buffer_y)}')
 
     def get_agent_reward(self, eaten, edible):
         if not eaten:
@@ -46,8 +42,10 @@ class MushroomBandit():
 
     def take_action(self, mushroom):
         context, edible = self.x[mushroom], self.y[mushroom]
-        eat_tuple = torch.FloatTensor(torch.cat((context, torch.FloatTensor([1, 0])))).unsqueeze(0).to(device)
-        reject_tuple = torch.FloatTensor(torch.cat((context, torch.FloatTensor([0, 1])))).unsqueeze(0).to(device)
+        # eat_tuple = torch.FloatTensor(torch.cat((context, torch.FloatTensor([1, 0])))).unsqueeze(0).to(device)
+        # reject_tuple = torch.FloatTensor(torch.cat((context, torch.FloatTensor([0, 1])))).unsqueeze(0).to(device)
+        eat_tuple = torch.FloatTensor(np.concatenate((context, [1, 0]))).unsqueeze(0).to(device)
+        reject_tuple = torch.FloatTensor(np.concatenate((context, [0, 1]))).unsqueeze(0).to(device)
 
         # evaluate reward for actions
         with torch.no_grad():
@@ -87,16 +85,4 @@ class MushroomBandit():
         return loss_info, self.cumulative_regrets[-1]
 
     def loss_step(self, x, y, batch_id):
-        ####
-        # raise not implemented error
-        ####
-        beta = 2 ** (64 - (batch_id + 1)) / (2 ** self.num_batches - 1) 
-        self.net.train()
-        self.net.zero_grad()
-        loss_info = self.net.sample_elbo(x, y, beta, self.n_samples)
-        if batch_id == 63:
-            print(loss_info)
-        net_loss = loss_info[0]
-        net_loss.backward()
-        self.optimiser.step()
-        return loss_info
+        raise NotImplementedError
