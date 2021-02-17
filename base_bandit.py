@@ -16,10 +16,7 @@ class MushroomBandit():
         self.buffer_x, self.buffer_y = [], []
         self.x, self.y = x, y
         self.init_net()
-        self.init_buffer()
-    
-    def init_net(self):
-        raise NotImplementedError
+        # self.init_buffer()
 
     def init_buffer(self):
         for i in np.random.choice(range(len(self.x)), self.buffer_size):
@@ -75,14 +72,31 @@ class MushroomBandit():
     def update(self, mushroom):
         self.take_action(mushroom)
         l = len(self.buffer_x)
-        idx_pool = range(l) if l >= self.buffer_size else ((int(self.buffer_size//l) + 1)*list(range(l)))
-        idx_pool = np.random.permutation(idx_pool[-self.buffer_size:])
+        # idx_pool = range(l) if l >= self.buffer_size else ((int(self.buffer_size//l) + 1)*list(range(l)))
+        # idx_pool = np.random.permutation(idx_pool[-self.buffer_size:])
+
+        if l <= self.batch_size:
+            idx_pool = int(self.batch_size//l + 1)*list(range(l))
+            idx_pool = np.random.permutation(idx_pool[-self.batch_size:])
+        elif l > self.batch_size and l < self.buffer_size:
+            idx_pool = int(l//self.batch_size)*self.batch_size
+            idx_pool = np.random.permutation(list(range(l))[-idx_pool:])
+        else:
+            idx_pool = np.random.permutation(list(range(l))[-self.buffer_size:])
+
         context_pool = torch.Tensor([self.buffer_x[i] for i in idx_pool]).to(device)
         value_pool = torch.Tensor([self.buffer_y[i] for i in idx_pool]).to(device)
-        for i in range(0, self.buffer_size, self.batch_size):
-            loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
+        # for i in range(0, self.buffer_size, self.batch_size):
+        #     loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
     
-        return loss_info, self.cumulative_regrets[-1]
+        for i in range(0, len(idx_pool), self.batch_size):
+            self.loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
+
+    def init_net(self):
+        raise NotImplementedError
 
     def loss_step(self, x, y, batch_id):
+        raise NotImplementedError
+
+    def log_progress(self, step):
         raise NotImplementedError

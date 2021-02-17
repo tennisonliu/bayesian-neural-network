@@ -24,7 +24,7 @@ class GaussianNode:
         super().__init__()
         self.mu = mu
         self.rho = rho
-        self.normal = torch.distributions.Normal(0, 1)
+        self.normal = torch.distributions.Normal(0,1)
     
     @property
     def sigma(self):
@@ -104,7 +104,8 @@ class BayesianNetwork(nn.Module):
 
     def get_nll(self, outputs, target, sigma=1.):
         nll = nn.functional.mse_loss(outputs, target, reduction='sum')
-        return torch.div(nll, (2*sigma**2)) + torch.log(torch.tensor([sigma])).to(device)
+        # return torch.div(nll, (2*sigma**2)) + torch.log(torch.tensor([sigma])).to(device)
+        return nll
 
     def sample_elbo(self, input, target, beta, samples):
         outputs = torch.zeros(samples, self.batch_size, self.classes).to(device)

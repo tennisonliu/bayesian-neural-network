@@ -2,11 +2,14 @@ import torch
 import numpy as np
 from networks import BayesianNetwork, MLP
 from base_bandit import MushroomBandit
+from torch.utils.tensorboard import SummaryWriter
 from config import *
+from utils import *
 
 class BNN_Bandit(MushroomBandit):
-    def __init__(self, *args):
+    def __init__(self, label, *args):
         super().__init__(*args)
+        self.writer = SummaryWriter(comment=f"_{label}_agent_training")
     
     def init_net(self):
         model_params = {
@@ -25,17 +28,22 @@ class BNN_Bandit(MushroomBandit):
         self.net.train()
         self.net.zero_grad()
         loss_info = self.net.sample_elbo(x, y, beta, self.n_samples)
-        if batch_id == 0:
-            print(loss_info)
+        # if batch_id == 0:
+        #     print(loss_info)
         net_loss = loss_info[0]
         net_loss.backward()
         self.optimiser.step()
         return loss_info
 
+    def log_progress(self, step):
+        write_weight_histograms(self.writer, self.net, step)
+        write_loss_scalars(self.writer, self.loss_info, self.cumulative_regrets[-1], step)
+
 class Greedy_Bandit(MushroomBandit):
-    def __init__(self, epsilon, *args):
+    def __init__(self, epsilon, label, *args):
         super().__init__(*args)
         self.epsilon = epsilon
+        self.writer = SummaryWriter(comment=f"_{label}_agent_training"),
     
     def init_net(self):
         model_params = {
@@ -56,3 +64,6 @@ class Greedy_Bandit(MushroomBandit):
         net_loss.backward()
         self.optimiser.step()
         return net_loss
+
+    def log_progress(self, step):
+        write_loss(self.writer[0], self.loss_info, self.cumulative_regrets[-1], step)
