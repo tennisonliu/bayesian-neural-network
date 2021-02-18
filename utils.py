@@ -31,18 +31,19 @@ def read_data():
 
 def write_weight_histograms(writer, net, step):
     ''' Logging tool for BNN Bandit '''
+    
     writer.add_histogram('histogram/w1_mu', net.l1.weight_mu,step)
-    writer.add_histogram('histogram/w1_rho', net.l1.weight_rho,step)
+    writer.add_histogram('histogram/w1_rho', torch.log1p(torch.exp(net.l1.weight_rho)),step)
     writer.add_histogram('histogram/w2_mu', net.l2.weight_mu,step)
-    writer.add_histogram('histogram/w2_rho', net.l2.weight_rho,step)
+    writer.add_histogram('histogram/w2_rho', torch.log1p(torch.exp(net.l2.weight_rho)),step)
     writer.add_histogram('histogram/w3_mu', net.l3.weight_mu,step)
-    writer.add_histogram('histogram/w3_rho', net.l3.weight_rho,step)
+    writer.add_histogram('histogram/w3_rho', torch.log1p(torch.exp(net.l3.weight_rho)),step)
     writer.add_histogram('histogram/b1_mu', net.l1.bias_mu,step)
-    writer.add_histogram('histogram/b1_rho', net.l1.bias_rho,step)
+    writer.add_histogram('histogram/b1_rho', torch.log1p(torch.exp(net.l1.bias_rho)),step)
     writer.add_histogram('histogram/b2_mu', net.l2.bias_mu,step)
-    writer.add_histogram('histogram/b2_rho', net.l2.bias_rho,step)
+    writer.add_histogram('histogram/b2_rho', torch.log1p(torch.exp(net.l2.bias_rho)),step)
     writer.add_histogram('histogram/b3_mu', net.l3.bias_mu,step)
-    writer.add_histogram('histogram/b3_rho', net.l3.bias_rho,step)
+    writer.add_histogram('histogram/b3_rho', torch.log1p(torch.exp(net.l3.bias_rho)),step)
 
 def write_loss_scalars(writer, loss, regret, step):
     ''' Logging tool for BNN Bandit '''

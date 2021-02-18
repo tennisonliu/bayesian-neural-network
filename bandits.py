@@ -8,7 +8,7 @@ from utils import *
 
 class BNN_Bandit(MushroomBandit):
     def __init__(self, label, *args):
-        super().__init__(*args)
+        super().__init__(label, *args)
         self.writer = SummaryWriter(comment=f"_{label}_agent_training")
     
     def init_net(self):
@@ -18,10 +18,14 @@ class BNN_Bandit(MushroomBandit):
             'num_batches': self.num_batches,
             'batch_size': self.batch_size
         }
-        print("BNN Parameters: ")
-        print(model_params)
         self.net = BayesianNetwork(model_params).to(device)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=5000, gamma=0.5)
+
+        print(f'Bandit {self.label} Parameters: ')
+        print(f'buffer_size: {self.buffer_size}, batch size: {self.batch_size}, number of samples: {self.n_samples}, epsilon: {self.epsilon}')
+        print("BNN Parameters: ")
+        print(f'input shape: {model_params["input_shape"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
 
     def loss_step(self, x, y, batch_id):
         beta = 2 ** (64 - (batch_id + 1)) / (2 ** self.num_batches - 1) 
@@ -40,9 +44,8 @@ class BNN_Bandit(MushroomBandit):
         write_loss_scalars(self.writer, self.loss_info, self.cumulative_regrets[-1], step)
 
 class Greedy_Bandit(MushroomBandit):
-    def __init__(self, epsilon, label, *args):
-        super().__init__(*args)
-        self.epsilon = epsilon
+    def __init__(self, label, *args):
+        super().__init__(label, *args)
         self.writer = SummaryWriter(comment=f"_{label}_agent_training"),
     
     def init_net(self):
@@ -52,10 +55,13 @@ class Greedy_Bandit(MushroomBandit):
             'num_batches': self.num_batches,
             'batch_size': self.batch_size
         }
-        print("MLP Parameters: ")
-        print(model_params)
         self.net = MLP(model_params).to(device)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=5000, gamma=0.5)
+        print(f'Bandit {self.label} Parameters: ')
+        print(f'buffer_size: {self.buffer_size}, batch size: {self.batch_size}, number of samples: {self.n_samples}, epsilon: {self.epsilon}')
+        print("MLP Parameters: ")
+        print(f'input shape: {model_params["input_shape"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
 
     def loss_step(self, x, y, batch_id):
         self.net.train()

@@ -3,18 +3,17 @@ import numpy as np
 from config import *
 
 class MushroomBandit():
-    def __init__(self, bandit_params, x, y):
-        print("Bandit Parameters: ")
-        print(bandit_params)
+    def __init__(self, label, bandit_params, x, y):
         self.n_samples = bandit_params['n_samples']
         self.buffer_size = bandit_params['buffer_size']
         self.batch_size = bandit_params['batch_size']
         self.num_batches = bandit_params['num_batches']
         self.lr = bandit_params['lr']
-        self.epsilon = 0
+        self.epsilon = bandit_params['epsilon']
         self.cumulative_regrets = [0]
         self.buffer_x, self.buffer_y = [], []
         self.x, self.y = x, y
+        self.label = label
         self.init_net()
         # self.init_buffer()
 
@@ -75,6 +74,7 @@ class MushroomBandit():
         # idx_pool = range(l) if l >= self.buffer_size else ((int(self.buffer_size//l) + 1)*list(range(l)))
         # idx_pool = np.random.permutation(idx_pool[-self.buffer_size:])
 
+        ## New
         if l <= self.batch_size:
             idx_pool = int(self.batch_size//l + 1)*list(range(l))
             idx_pool = np.random.permutation(idx_pool[-self.batch_size:])
@@ -87,8 +87,10 @@ class MushroomBandit():
         context_pool = torch.Tensor([self.buffer_x[i] for i in idx_pool]).to(device)
         value_pool = torch.Tensor([self.buffer_y[i] for i in idx_pool]).to(device)
         # for i in range(0, self.buffer_size, self.batch_size):
-        #     loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
-    
+        #     # loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
+        #     self.loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
+
+        ## NEW    
         for i in range(0, len(idx_pool), self.batch_size):
             self.loss_info = self.loss_step(context_pool[i:i+self.batch_size], value_pool[i:i+self.batch_size], i//self.batch_size)
 

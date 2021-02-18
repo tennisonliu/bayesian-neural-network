@@ -15,10 +15,10 @@ def main():
     }
 
     bandits = {
-        'bnn': BNN_Bandit('bnn', {**params, 'n_samples':Config.n_samples}, X, Y),
-        'greedy': Greedy_Bandit(0.0, 'greedy', {**params, 'n_samples':1}, X, Y),
-        '0.01-greedy': Greedy_Bandit(0.01, '0.01_greedy', {**params, 'n_samples':1}, X, Y),
-        '0.05-greedy': Greedy_Bandit(0.05, '0.05_greedy', {**params, 'n_samples':1}, X, Y)
+        'bnn': BNN_Bandit('bnn', {**params, 'n_samples':2, 'epsilon':0}, X, Y),
+        'greedy': Greedy_Bandit('greedy', {**params, 'n_samples':1, 'epsilon':0}, X, Y),
+        '0.01-greedy': Greedy_Bandit('0.01_greedy', {**params, 'n_samples':1, 'epsilon':0.01}, X, Y),
+        '0.05-greedy': Greedy_Bandit('0.05_greedy', {**params, 'n_samples':1, 'epsilon':0.05}, X, Y)
     }
 
     NB_STEPS = Config.NB_STEPS
@@ -28,6 +28,7 @@ def main():
         mushroom = np.random.randint(num_training_data)
         for _, bandit in bandits.items():
             bandit.update(mushroom)
+            bandit.scheduler.step()
             if (step+1)%100 == 0:
                 bandit.log_progress(step)
 

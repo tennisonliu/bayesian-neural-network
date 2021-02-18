@@ -103,9 +103,11 @@ class BayesianNetwork(nn.Module):
         return self.l1.log_variational_posterior + self.l2.log_variational_posterior + self.l3.log_variational_posterior
 
     def get_nll(self, outputs, target, sigma=1.):
-        nll = nn.functional.mse_loss(outputs, target, reduction='sum')
+        ll = torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
+        return -ll
+        # nll = nn.functional.mse_loss(outputs, target, reduction='sum')
         # return torch.div(nll, (2*sigma**2)) + torch.log(torch.tensor([sigma])).to(device)
-        return nll
+        # return nll
 
     def sample_elbo(self, input, target, beta, samples):
         outputs = torch.zeros(samples, self.batch_size, self.classes).to(device)
@@ -117,7 +119,6 @@ class BayesianNetwork(nn.Module):
             log_variational_posteriors[i] = self.log_variational_posterior()
         log_prior = beta*log_priors.mean()
         log_variational_posterior = beta*log_variational_posteriors.mean()
-        # negative_log_likelihood = nn.functional.mse_loss(outputs.mean(0).squeeze(), target, reduction='sum')
         negative_log_likelihood = self.get_nll(outputs.mean(0).squeeze(), target)
         loss = log_variational_posterior - log_prior + negative_log_likelihood
         return loss, log_priors.mean(), log_variational_posteriors.mean(), negative_log_likelihood
