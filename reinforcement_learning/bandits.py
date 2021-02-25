@@ -1,39 +1,47 @@
+'''
+Two Contextual bandits 
+1) BNN and Thompson Sampling -> BNN_Bandit
+2) MLP and epsilon-greedy poligy -> Greedy_Bandit
+Both derived from base_bandit.py class
+'''
+
 import torch
 import numpy as np
-from networks import BayesianNetwork, MLP
-from base_bandit import MushroomBandit
+from .base_bandit import Bandit
 from torch.utils.tensorboard import SummaryWriter
-from config import *
-from utils import *
 
-class BNN_Bandit(MushroomBandit):
+import sys
+sys.path.append('../')
+from utils import *
+from networks import BayesianNetwork, MLP
+from config import DEVICE
+
+class BNN_Bandit(Bandit):
     def __init__(self, label, *args):
         super().__init__(label, *args)
-        self.writer = SummaryWriter(comment=f"_{label}_agent_training")
+        self.writer = SummaryWriter(comment=f"_{label}_training")
     
     def init_net(self):
         model_params = {
             'input_shape': self.x.shape[1]+2,
             'classes': 1 if len(self.y.shape)==1 else self.y.shape[1],
-            'num_batches': self.num_batches,
-            'batch_size': self.batch_size
+            'batch_size': self.batch_size,
+            'hidden_units': self.hidden_units,
+            'mode': self.mode
         }
-        self.net = BayesianNetwork(model_params).to(device)
+        self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=5000, gamma=0.5)
-
         print(f'Bandit {self.label} Parameters: ')
         print(f'buffer_size: {self.buffer_size}, batch size: {self.batch_size}, number of samples: {self.n_samples}, epsilon: {self.epsilon}')
         print("BNN Parameters: ")
-        print(f'input shape: {model_params["input_shape"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
+        print(f'input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
 
     def loss_step(self, x, y, batch_id):
-        beta = 2 ** (64 - (batch_id + 1)) / (2 ** self.num_batches - 1) 
+        beta = 2 ** (self.num_batches - (batch_id + 1)) / (2 ** self.num_batches - 1) 
         self.net.train()
         self.net.zero_grad()
         loss_info = self.net.sample_elbo(x, y, beta, self.n_samples)
-        # if batch_id == 0:
-        #     print(loss_info)
         net_loss = loss_info[0]
         net_loss.backward()
         self.optimiser.step()
@@ -41,27 +49,29 @@ class BNN_Bandit(MushroomBandit):
 
     def log_progress(self, step):
         write_weight_histograms(self.writer, self.net, step)
-        write_loss_scalars(self.writer, self.loss_info, self.cumulative_regrets[-1], step)
+        write_loss_scalars(self.writer, self.loss_info, step)
+        self.writer.add_scalar('logs/cumulative_regret', self.cumulative_regrets[-1], step)
 
-class Greedy_Bandit(MushroomBandit):
+class Greedy_Bandit(Bandit):
     def __init__(self, label, *args):
         super().__init__(label, *args)
-        self.writer = SummaryWriter(comment=f"_{label}_agent_training"),
+        self.writer = SummaryWriter(comment=f"_{label}_training"),
     
     def init_net(self):
         model_params = {
             'input_shape': self.x.shape[1]+2,
             'classes': 1 if len(self.y.shape)==1 else self.y.shape[1],
-            'num_batches': self.num_batches,
-            'batch_size': self.batch_size
+            'batch_size': self.batch_size,
+            'hidden_units': self.hidden_units,
+            'mode': self.mode
         }
-        self.net = MLP(model_params).to(device)
+        self.net = MLP(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=5000, gamma=0.5)
         print(f'Bandit {self.label} Parameters: ')
         print(f'buffer_size: {self.buffer_size}, batch size: {self.batch_size}, number of samples: {self.n_samples}, epsilon: {self.epsilon}')
         print("MLP Parameters: ")
-        print(f'input shape: {model_params["input_shape"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
+        print(f'input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
 
     def loss_step(self, x, y, batch_id):
         self.net.train()
@@ -72,4 +82,5 @@ class Greedy_Bandit(MushroomBandit):
         return net_loss
 
     def log_progress(self, step):
-        write_loss(self.writer[0], self.loss_info, self.cumulative_regrets[-1], step)
+        write_loss(self.writer[0], self.loss_info, step)
+        self.writer[0].add_scalar('logs/cumulative_regret', self.cumulative_regrets[-1], step)

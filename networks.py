@@ -1,3 +1,8 @@
+'''
+Components required to define Bayesian Neural Network
+-> Gaussian mixture prior + variational Gaussian posterior
+'''
+
 import torch
 import math
 from torch import nn
@@ -31,11 +36,10 @@ class GaussianNode:
         return torch.log1p(torch.exp(self.rho))
 
     def sample(self):
-        epsilon = self.normal.sample(self.rho.size()).to(device)
+        epsilon = self.normal.sample(self.rho.size()).to(DEVICE)
         return self.mu + self.sigma * epsilon
     
     def log_prob(self, input):
-        ## :~
         return (-math.log(math.sqrt(2 * math.pi)) - torch.log(self.sigma) - ((input - self.mu) ** 2) / (2 * self.sigma ** 2)).sum()
 
 class BayesianLinear(nn.Module):
@@ -74,25 +78,25 @@ class BayesianLinear(nn.Module):
         return nn.functional.linear(input, weight, bias)
 
 class BayesianNetwork(nn.Module):
+    ''' Bayesian Neural Network '''
     def __init__(self, model_params):
         super().__init__()
         self.input_shape = model_params['input_shape']
         self.classes = model_params['classes']
         self.batch_size = model_params['batch_size']
-        self.num_batches = model_params['num_batches']
+        self.hidden_units = model_params['hidden_units']
+        self.mode = model_params['mode']
 
-        self.l1 = BayesianLinear(self.input_shape, 100)
+        self.l1 = BayesianLinear(self.input_shape, self.hidden_units)
         self.l1_act = nn.ReLU()
-        self.l2 = BayesianLinear(100, 100)
+        self.l2 = BayesianLinear(self.hidden_units, self.hidden_units)
         self.l2_act = nn.ReLU()
-        self.l3 = BayesianLinear(100, self.classes)
-        # self.l3_act = nn.LogSoftmax(dim=1)   # Log Softmax to work with NLLLoss ## dim=1? ## do not need softmax since we are trying to estimate reward
+        self.l3 = BayesianLinear(self.hidden_units, self.classes)
     
     def forward(self, x, sample=False):
         assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
         x = self.l1_act(self.l1(x, sample))
         x = self.l2_act(self.l2(x, sample))
-        # x = self.l3_act(self.l3(x, sample))
         x = self.l3(x, sample)
         return x
 
@@ -103,16 +107,18 @@ class BayesianNetwork(nn.Module):
         return self.l1.log_variational_posterior + self.l2.log_variational_posterior + self.l3.log_variational_posterior
 
     def get_nll(self, outputs, target, sigma=1.):
-        ll = torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
+        if self.mode == 'regression':
+            ll = torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
+        elif self.mode == 'classification':
+            ll = nn.CrossEntropy()
+        else:
+            raise Exception("Training mode must be either 'regression' or 'classification'")
         return -ll
-        # nll = nn.functional.mse_loss(outputs, target, reduction='sum')
-        # return torch.div(nll, (2*sigma**2)) + torch.log(torch.tensor([sigma])).to(device)
-        # return nll
 
     def sample_elbo(self, input, target, beta, samples):
-        outputs = torch.zeros(samples, self.batch_size, self.classes).to(device)
-        log_priors = torch.zeros(samples).to(device)
-        log_variational_posteriors = torch.zeros(samples).to(device)
+        outputs = torch.zeros(samples, self.batch_size, self.classes).to(DEVICE)
+        log_priors = torch.zeros(samples).to(DEVICE)
+        log_variational_posteriors = torch.zeros(samples).to(DEVICE)
         for i in range(samples):
             outputs[i] = self.forward(input, sample=True)
             log_priors[i] = self.log_prior()
@@ -129,14 +135,15 @@ class MLP(nn.Module):
         self.input_shape = model_params['input_shape']
         self.classes = model_params['classes']
         self.batch_size = model_params['batch_size']
-        self.num_batches = model_params['num_batches']
+        self.hidden_units = model_params['hidden_units']
+        self.mode = model_params['mode']
 
         self.net = nn.Sequential(
-            nn.Linear(self.input_shape, 100),
+            nn.Linear(self.input_shape, self.hidden_units),
             nn.ReLU(),
-            nn.Linear(100, 100),
+            nn.Linear(self.hidden_units, self.hidden_units),
             nn.ReLU(),
-            nn.Linear(100, self.classes))
+            nn.Linear(self.hidden_units, self.classes))
     
     def forward(self, x):
         assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
