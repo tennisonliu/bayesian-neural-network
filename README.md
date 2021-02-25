@@ -9,11 +9,16 @@ Paper: Blundell, C., Cornebise, J., Kavukcuoglu, K. and Wierstra, D., 2015, June
 
 
 ## Running and Configuring Model:
-Training and evaluation of the model are actioned through `main.py`, the main entry point. The BNNs and non-Bayesian MLPs are defined in `networks.py`. Functions required to run each experiment are included in `/regression`, `/reinforcement_learning` and `/classification`. Helper functions are included for loadin data `data_utils.py` and logging progress `utils.py`. 
+Training and evaluation of the model are actioned through `main.py`, the main entry point. The BNNs and non-Bayesian MLPs are defined in `networks.py`. Functions required to run each experiment are included in 
+* `/regression`, 
+* `/reinforcement_learning`, and
+* `/classification`.
+
+Helper functions are included for loadin data `data_utils.py` and logging progress `utils.py`. 
 
 At run-time, `main` reads from a model configuration set in `config.py`. The configurations required to replicate the results of the paper are presented as-is. 
 
-*E.g.* To train any model:
+*e.g.* To train any model:
 ```
 python3 main.py --model [regression|classification|rl]
 ```
