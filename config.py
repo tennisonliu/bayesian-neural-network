@@ -8,13 +8,15 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class RegConfig:
     train_size = 2048
+    test_size = 400
     batch_size = 128
-    lr = 1e-4
-    epochs = 1000
+    lr = 1e-3
+    epochs = 1
     hidden_units = 400
     mode = 'regression'
     train_samples = 2 
-    test_smaples = 100
+    test_samples = 100
+    nll_sigma = 0.1
 
 class RLConfig:
     data_dir = 'data/agaricus-lepiota.data'

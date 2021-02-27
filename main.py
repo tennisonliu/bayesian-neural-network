@@ -36,6 +36,12 @@ def reg_trainer():
             model.log_progress(epoch)
             model.scheduler.step()
 
+    print("Evaluating...")
+    X_test = torch.linspace(-2., 2, config.test_samples).reshape(-1, 1)
+    for _, model in models.items():
+        model.evaluate(X_test, config.test_samples, train_ds)
+
+
 def rl_trainer():
     ''' RL Bandit Task Trainer'''
     config = RLConfig

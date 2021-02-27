@@ -12,6 +12,7 @@ sys.path.append('../')
 from utils import *
 from networks import BayesianNetwork, MLP
 from config import DEVICE
+from plotting import create_regression_plot
 
 class BNN_Regression():
     def __init__(self, label, parameters):
@@ -59,6 +60,14 @@ class BNN_Regression():
         write_weight_histograms(self.writer, self.net, step)
         write_loss_scalars(self.writer, self.loss_info, step)
 
+    def evaluate(self, X_test, samples, train_ds):
+        self.net.eval()
+        y_test = np.zeros((samples, X_test.shape[0]))
+        for s in range(samples):
+            tmp = self.net(X_test.to(DEVICE)).detach().cpu().numpy()
+            y_test[s,:] = tmp.reshape(-1)
+        create_regression_plot(X_test.cpu().numpy(), y_test, train_ds, 'bnn')
+
 class MLP_Regression():
     def __init__(self, label, parameters):
         super().__init__()
@@ -98,3 +107,8 @@ class MLP_Regression():
 
     def log_progress(self, step):
         write_loss(self.writer, self.loss_info, step)
+
+    def evaluate(self, X_test, samples, train_ds):
+        self.net.eval()
+        y_test = self.net(X_test.to(DEVICE)).detach().cpu().numpy()
+        create_regression_plot(X_test.cpu().numpy(), y_test.reshape(1, -1), train_ds, 'mlp')

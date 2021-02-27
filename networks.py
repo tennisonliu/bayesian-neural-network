@@ -106,9 +106,9 @@ class BayesianNetwork(nn.Module):
     def log_variational_posterior(self):
         return self.l1.log_variational_posterior + self.l2.log_variational_posterior + self.l3.log_variational_posterior
 
-    def get_nll(self, outputs, target, sigma=1.):
+    def get_nll(self, outputs, target, sigma=0.1):
         if self.mode == 'regression':
-            ll = torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
+            ll = torch.distributions.Normal(outputs, RegConfig.nll_sigma).log_prob(target).sum()
         elif self.mode == 'classification':
             ll = nn.CrossEntropy()
         else:
