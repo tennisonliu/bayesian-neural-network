@@ -7,14 +7,19 @@ global DEVICE
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class RegConfig:
+    save_dir = './saved_models'
     train_size = 2048
     batch_size = 128
-    lr = 1e-4
+    lr = 1e-3
     epochs = 1000
-    hidden_units = 400
-    mode = 'regression'
     train_samples = 2 
-    test_smaples = 100
+    test_samples = 100
+    mode = 'regression'
+    hidden_units = 400
+    noise_tolerance = .1
+    mu_init = [-0.2, 0.2]           # range for mu 
+    rho_init = [-5, -4]             # range for rho
+    prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
 
 class RLConfig:
     data_dir = 'data/agaricus-lepiota.data'
@@ -23,5 +28,8 @@ class RLConfig:
     buffer_size = batch_size * num_batches
     lr = 1e-4
     training_steps = 50000
-    hidden_units = 100
     mode = 'regression'
+    hidden_units = 100
+    mu_init = [-0.2, 0.2]           # range for mu 
+    rho_init = [-5, -4]             # range for rho
+    prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
