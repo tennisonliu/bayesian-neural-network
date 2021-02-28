@@ -57,6 +57,8 @@ class BayesianLinear(nn.Module):
         self.bias_rho = nn.Parameter(torch.Tensor(out_features).uniform_(-5, -4))
         self.bias = GaussianNode(self.bias_mu, self.bias_rho)
 
+        #self.weight_prior = GaussianNode(torch.Tensor([0]).to(DEVICE), torch.Tensor([0.54]).to(DEVICE))
+        #self.bias_prior = GaussianNode(torch.Tensor([0]).to(DEVICE), torch.Tensor([0.54]).to(DEVICE))
         self.weight_prior = ScaleMixtureGaussian(0.5, math.exp(-0), math.exp(-6))   # prior mean 0.5, sigma1 = exp(-0), sigma2 = exp(-6)
         self.bias_prior = ScaleMixtureGaussian(0.5, math.exp(-0), math.exp(-6))
         self.log_prior = 0
@@ -86,6 +88,7 @@ class BayesianNetwork(nn.Module):
         self.batch_size = model_params['batch_size']
         self.hidden_units = model_params['hidden_units']
         self.mode = model_params['mode']
+        self.nll_sigma = model_params['nll_sigma']
 
         self.l1 = BayesianLinear(self.input_shape, self.hidden_units)
         self.l1_act = nn.ReLU()
@@ -108,7 +111,7 @@ class BayesianNetwork(nn.Module):
 
     def get_nll(self, outputs, target, sigma=0.1):
         if self.mode == 'regression':
-            ll = torch.distributions.Normal(outputs, RegConfig.nll_sigma).log_prob(target).sum()
+            ll = torch.distributions.Normal(outputs, self.nll_sigma).log_prob(target).sum()
         elif self.mode == 'classification':
             ll = nn.CrossEntropy()
         else:

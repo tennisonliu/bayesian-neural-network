@@ -11,7 +11,7 @@ class RegConfig:
     test_size = 400
     batch_size = 128
     lr = 1e-3
-    epochs = 1
+    epochs = 1000
     hidden_units = 400
     mode = 'regression'
     train_samples = 2 

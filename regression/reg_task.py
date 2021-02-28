@@ -27,6 +27,7 @@ class BNN_Regression():
         self.n_samples = parameters['num_training_samples']
         self.x_shape = parameters['x_shape']
         self.y_shape = parameters['y_shape']
+        self.nll_sigma = parameters['nll_sigma']
         self.init_net()
     
     def init_net(self):
@@ -35,7 +36,8 @@ class BNN_Regression():
             'classes': self.y_shape,
             'batch_size': self.batch_size,
             'hidden_units': self.hidden_units,
-            'mode': self.mode
+            'mode': self.mode,
+            'nll_sigma': self.nll_sigma
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)

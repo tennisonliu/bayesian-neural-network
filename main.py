@@ -20,7 +20,8 @@ def reg_trainer():
         'num_batches': len(train_ds),
         'x_shape': X.shape[1],
         'y_shape': Y.shape[1],
-        'num_training_samples': config.train_samples
+        'num_training_samples': config.train_samples,
+        'nll_sigma': config.nll_sigma
     }
 
     models = {
