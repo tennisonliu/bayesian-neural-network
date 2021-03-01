@@ -42,7 +42,7 @@ class ClassConfig:
     batch_size = 128
     lr = 1e-4
     epochs = 200
-    hidden_units = 400
+    hidden_units = 1200
     mode = 'classification'
     train_samples = 2
     test_smaples = 10
