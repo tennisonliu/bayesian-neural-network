@@ -44,7 +44,7 @@ class BNN_Classification():
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=5000, gamma=0.5)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=100, gamma=0.5)
         print(f'Classification Task {self.label} Parameters: ')
         print(f'number of samples: {self.n_samples}')
         print("BNN Parameters: ")
