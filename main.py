@@ -129,7 +129,11 @@ def class_trainer():
         'classes': config.classes,
         'num_batches': len(train_ds),
         'train_samples': config.train_samples,
-        'test_samples': config.test_smaples
+        'test_samples': config.test_smaples,
+        'mu_init': config.mu_init,
+        'rho_init': config.rho_init,
+        'prior_init': config.prior_init,
+        'mixture_prior':config.mixture_prior
     }
 
     models = {'bnn': BNN_Classification('bnn_classification', params)}

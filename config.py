@@ -12,7 +12,7 @@ class RegConfig:
     batch_size = 128
     lr = 1e-3
     epochs = 1000
-    train_samples = 1
+    train_samples = 2
     test_samples = 100
     num_test_points = 400
     mode = 'regression'
@@ -44,7 +44,11 @@ class ClassConfig:
     epochs = 300
     hidden_units = 400
     mode = 'classification'
-    train_samples = 2 
+    train_samples = 2
     test_smaples = 30
     x_shape = 28 * 28
     classes = 10
+    mu_init = [-0.2, 0.2]           # range for mu 
+    rho_init = [-5, -4]             # range for rho
+    prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
+    mixture_prior=True

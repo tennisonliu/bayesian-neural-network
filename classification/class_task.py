@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 import sys
 sys.path.append('../')
-from utils import *
+from logger_utils import *
 from networks import BayesianNetwork, MLP
 from config import DEVICE
 
@@ -24,6 +24,10 @@ class BNN_Classification():
         self.test_samples = parameters['test_samples']
         self.x_shape = parameters['x_shape']
         self.classes = parameters['classes']
+        self.mu_init = parameters['mu_init']
+        self.rho_init = parameters['rho_init']
+        self.prior_init = parameters['prior_init']
+        self.mixture_prior = parameters['mixture_prior']
         self.init_net()
     
     def init_net(self):
@@ -32,7 +36,11 @@ class BNN_Classification():
             'classes': self.classes,
             'batch_size': self.batch_size,
             'hidden_units': self.hidden_units,
-            'mode': self.mode
+            'mode': self.mode,
+            'mu_init': self.mu_init,
+            'rho_init': self.rho_init,
+            'prior_init': self.prior_init,
+            'mixture_prior': self.mixture_prior
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)

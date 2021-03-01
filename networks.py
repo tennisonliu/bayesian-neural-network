@@ -131,20 +131,24 @@ class BayesianNetwork(nn.Module):
         return -ll
 
     def sample_elbo(self, input, target, beta, samples, sigma=1.):
-        outputs = torch.zeros(samples, self.batch_size, self.classes).to(DEVICE)
+        #outputs = torch.zeros(samples, self.batch_size, self.classes).to(DEVICE)
         log_priors = torch.zeros(samples).to(DEVICE)
         log_variational_posteriors = torch.zeros(samples).to(DEVICE)
-        negative_log_likelihoods = torch.zeros(samples).to(DEVICE)
+        #negative_log_likelihoods = torch.zeros(samples).to(DEVICE)
+        negative_log_likelihood = torch.zeros(1).to(DEVICE)
 
         for i in range(samples):
-            outputs[i] = self.forward(input, sample=True)
+            #outputs[i] = self.forward(input, sample=True)
+            output = self.forward(input, sample=True)
             log_priors[i] = self.log_prior()
             log_variational_posteriors[i] = self.log_variational_posterior()
-            negative_log_likelihoods[i] = self.get_nll(outputs[i], target, sigma)
+            #negative_log_likelihoods[i] = self.get_nll(outputs[i], target, sigma)
+            negative_log_likelihood += self.get_nll(output, target, sigma)
 
         log_prior = beta*log_priors.mean()
         log_variational_posterior = beta*log_variational_posteriors.mean()
-        negative_log_likelihood = negative_log_likelihoods.mean()
+        #negative_log_likelihood = negative_log_likelihoods.mean()
+        negative_log_likelihood = negative_log_likelihood / samples
         loss = log_variational_posterior - log_prior + negative_log_likelihood
         return loss, log_priors.mean(), log_variational_posteriors.mean(), negative_log_likelihood
 
