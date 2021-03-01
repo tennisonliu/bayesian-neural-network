@@ -73,10 +73,11 @@ class BNN_Classification():
                 preds = self.sample_predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
-
-        print(f'Validation accuracy: {correct / total}')
+        self.acc = correct / total
+        print(f'Validation accuracy: {self.acc}')
         
 
     def log_progress(self, step):
         write_weight_histograms(self.writer, self.net, step)
         write_loss_scalars(self.writer, self.loss_info, step)
+        write_acc(self.writer, self.acc, step)
