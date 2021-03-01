@@ -29,3 +29,7 @@ def write_loss_scalars(writer, loss, step):
 def write_loss(writer, loss, step):
     ''' Logging tool MLP '''
     writer.add_scalar('logs/loss', loss, step)
+
+def write_acc(writer, acc, step):
+    ''' Logging tool classification '''
+    writer.add_scalar('logs/acc', acc, step)

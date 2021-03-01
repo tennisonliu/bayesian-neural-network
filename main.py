@@ -4,6 +4,7 @@ Main script with trainers
 import numpy as np
 from reinforcement_learning.bandits import BNN_Bandit, Greedy_Bandit
 from regression.reg_task import BNN_Regression, MLP_Regression
+from classification.class_task import BNN_Classification
 from tqdm import tqdm
 from config import *
 from data_utils import *
@@ -99,6 +100,58 @@ def rl_trainer():
             bandit.scheduler.step()
             if (step+1)%100 == 0:
                 bandit.log_progress(step)
+
+
+def class_trainer():
+    ''' MNIST classification Task Trainer'''
+    config = ClassConfig
+
+    train_ds = DataLoader(
+        datasets.MNIST(
+        './mnist', train=True, download=True,
+        transform=transforms.ToTensor()),
+        batch_size=config.batch_size, shuffle=True, drop_last=True)
+
+        
+    test_ds = DataLoader(
+        datasets.MNIST(
+        './mnist', train=False, download=True,
+        transform=transforms.ToTensor()),
+        batch_size=config.batch_size, shuffle=False, drop_last=True)
+
+    params = {
+        'lr': config.lr,
+        'hidden_units': config.hidden_units,
+        'mode': config.mode,
+        'batch_size': config.batch_size,
+        'epochs': config.epochs,
+        'x_shape': config.x_shape,
+        'classes': config.classes,
+        'num_batches': len(train_ds),
+        'train_samples': config.train_samples,
+        'test_samples': config.test_smaples,
+        'mu_init': config.mu_init,
+        'rho_init': config.rho_init,
+        'prior_init': config.prior_init,
+        'mixture_prior':config.mixture_prior,
+        'save_dir': config.save_dir
+    }
+
+    models = {'bnn': BNN_Classification('bnn_classification', params)}
+    
+    epochs = config.epochs
+    print(f"Initialising training on {DEVICE}...")
+    for epoch in range(epochs):
+        print(f'Epoch {epoch+1}/{epochs}')
+        for _, model in models.items():
+            model.train_step(train_ds)
+            model.evaluate(test_ds)
+            model.log_progress(epoch)
+            model.scheduler.step()
+
+            if model.acc > model.best_acc:
+                    model.best_acc = model.acc
+                    torch.save(model.net.state_dict(), model.save_model_path)
 
 
 if __name__ == "__main__":
