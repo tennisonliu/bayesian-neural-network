@@ -123,31 +123,26 @@ class BayesianNetwork(nn.Module):
 
     def get_nll(self, outputs, target, sigma=1.):
         if self.mode == 'regression':
-            ll = torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
+            nll = -torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
         elif self.mode == 'classification':
-            ll = -nn.CrossEntropyLoss()(outputs, target)
+            nll = nn.CrossEntropyLoss()(outputs, target)
         else:
             raise Exception("Training mode must be either 'regression' or 'classification'")
-        return -ll
+        return nll
 
     def sample_elbo(self, input, target, beta, samples, sigma=1.):
-        #outputs = torch.zeros(samples, self.batch_size, self.classes).to(DEVICE)
         log_priors = torch.zeros(samples).to(DEVICE)
         log_variational_posteriors = torch.zeros(samples).to(DEVICE)
-        #negative_log_likelihoods = torch.zeros(samples).to(DEVICE)
         negative_log_likelihood = torch.zeros(1).to(DEVICE)
 
         for i in range(samples):
-            #outputs[i] = self.forward(input, sample=True)
             output = self.forward(input, sample=True)
             log_priors[i] = self.log_prior()
             log_variational_posteriors[i] = self.log_variational_posterior()
-            #negative_log_likelihoods[i] = self.get_nll(outputs[i], target, sigma)
             negative_log_likelihood += self.get_nll(output, target, sigma)
 
         log_prior = beta*log_priors.mean()
         log_variational_posterior = beta*log_variational_posteriors.mean()
-        #negative_log_likelihood = negative_log_likelihoods.mean()
         negative_log_likelihood = negative_log_likelihood / samples
         loss = log_variational_posterior - log_prior + negative_log_likelihood
         return loss, log_priors.mean(), log_variational_posteriors.mean(), negative_log_likelihood
