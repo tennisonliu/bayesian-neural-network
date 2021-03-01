@@ -1,5 +1,6 @@
 __pycache__/
 */__pycache__/
+<<<<<<< HEAD
 .ipynb_checkpoints
 
 # Environments
@@ -35,3 +36,8 @@ MANIFEST
 # Reports
 runs/*
 graphs/*
+=======
+/data
+/runs
+poc.py
+>>>>>>> master

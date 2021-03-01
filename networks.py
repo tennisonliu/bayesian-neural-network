@@ -2,7 +2,6 @@
 Components required to define Bayesian Neural Network
 -> Gaussian mixture prior + variational Gaussian posterior
 '''
-
 import torch
 import math
 from torch import nn
@@ -44,23 +43,21 @@ class GaussianNode:
 
 class BayesianLinear(nn.Module):
     ''' FC Layer with Bayesian Weights '''
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features, out_features, mu_init, rho_init, prior_init):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
 
-        self.weight_mu = nn.Parameter(torch.Tensor(out_features, in_features).uniform_(-0.2, 0.2))  # variance initialised between (-0.2, 0.2)
-        self.weight_rho = nn.Parameter(torch.Tensor(out_features, in_features).uniform_(-5, -4))    # mean initialised between (-5, -4)
+        self.weight_mu = nn.Parameter(torch.Tensor(out_features, in_features).uniform_(*mu_init))
+        self.weight_rho = nn.Parameter(torch.Tensor(out_features, in_features).uniform_(*rho_init))
         self.weight = GaussianNode(self.weight_mu, self.weight_rho)
 
-        self.bias_mu = nn.Parameter(torch.Tensor(out_features).uniform_(-0.2, 0.2))
-        self.bias_rho = nn.Parameter(torch.Tensor(out_features).uniform_(-5, -4))
+        self.bias_mu = nn.Parameter(torch.Tensor(out_features).uniform_(*mu_init))
+        self.bias_rho = nn.Parameter(torch.Tensor(out_features).uniform_(*rho_init))
         self.bias = GaussianNode(self.bias_mu, self.bias_rho)
 
-        #self.weight_prior = GaussianNode(torch.Tensor([0]).to(DEVICE), torch.Tensor([0.54]).to(DEVICE))
-        #self.bias_prior = GaussianNode(torch.Tensor([0]).to(DEVICE), torch.Tensor([0.54]).to(DEVICE))
-        self.weight_prior = ScaleMixtureGaussian(0.5, math.exp(-0), math.exp(-6))   # prior mean 0.5, sigma1 = exp(-0), sigma2 = exp(-6)
-        self.bias_prior = ScaleMixtureGaussian(0.5, math.exp(-0), math.exp(-6))
+        self.weight_prior = ScaleMixtureGaussian(prior_init[0], math.exp(prior_init[1]), math.exp(prior_init[2]))
+        self.bias_prior = ScaleMixtureGaussian(prior_init[0], math.exp(prior_init[1]), math.exp(prior_init[2]))
         self.log_prior = 0
         self.log_variational_posterior = 0
 
@@ -88,13 +85,15 @@ class BayesianNetwork(nn.Module):
         self.batch_size = model_params['batch_size']
         self.hidden_units = model_params['hidden_units']
         self.mode = model_params['mode']
-        self.nll_sigma = model_params['nll_sigma']
+        self.mu_init = model_params['mu_init']
+        self.rho_init = model_params['rho_init']
+        self.prior_init = model_params['prior_init']
 
-        self.l1 = BayesianLinear(self.input_shape, self.hidden_units)
+        self.l1 = BayesianLinear(self.input_shape, self.hidden_units, self.mu_init, self.rho_init, self.prior_init)
         self.l1_act = nn.ReLU()
-        self.l2 = BayesianLinear(self.hidden_units, self.hidden_units)
+        self.l2 = BayesianLinear(self.hidden_units, self.hidden_units, self.mu_init, self.rho_init, self.prior_init)
         self.l2_act = nn.ReLU()
-        self.l3 = BayesianLinear(self.hidden_units, self.classes)
+        self.l3 = BayesianLinear(self.hidden_units, self.classes, self.mu_init, self.rho_init, self.prior_init)
     
     def forward(self, x, sample=False):
         assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
@@ -118,7 +117,7 @@ class BayesianNetwork(nn.Module):
             raise Exception("Training mode must be either 'regression' or 'classification'")
         return -ll
 
-    def sample_elbo(self, input, target, beta, samples):
+    def sample_elbo(self, input, target, beta, samples, sigma=1.):
         outputs = torch.zeros(samples, self.batch_size, self.classes).to(DEVICE)
         log_priors = torch.zeros(samples).to(DEVICE)
         log_variational_posteriors = torch.zeros(samples).to(DEVICE)
@@ -128,7 +127,7 @@ class BayesianNetwork(nn.Module):
             log_variational_posteriors[i] = self.log_variational_posterior()
         log_prior = beta*log_priors.mean()
         log_variational_posterior = beta*log_variational_posteriors.mean()
-        negative_log_likelihood = self.get_nll(outputs.mean(0).squeeze(), target)
+        negative_log_likelihood = self.get_nll(outputs.mean(0).squeeze(), target, sigma)
         loss = log_variational_posterior - log_prior + negative_log_likelihood
         return loss, log_priors.mean(), log_variational_posteriors.mean(), negative_log_likelihood
 

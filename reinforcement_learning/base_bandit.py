@@ -1,7 +1,6 @@
 '''
 Defines base class for contextual bandits
 '''
-
 import torch
 import numpy as np
 
@@ -17,13 +16,11 @@ class Bandit():
         self.num_batches = bandit_params['num_batches']
         self.lr = bandit_params['lr']
         self.epsilon = bandit_params['epsilon']
-        self.hidden_units = bandit_params['hidden_units']
-        self.mode = bandit_params['mode']
         self.cumulative_regrets = [0]
         self.buffer_x, self.buffer_y = [], []
         self.x, self.y = x, y
         self.label = label
-        self.init_net()
+        self.init_net(bandit_params)
 
     def get_agent_reward(self, eaten, edible):
         if not eaten:
