@@ -40,17 +40,18 @@ class BNN_Regression():
             'batch_size': self.batch_size,
             'hidden_units': parameters['hidden_units'],
             'mode': parameters['mode'],
+            'mixture_prior': parameters['mixture_prior'],
             'mu_init': parameters['mu_init'],
             'rho_init': parameters['rho_init'],
             'prior_init': parameters['prior_init']
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=5000, gamma=0.5)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=500, gamma=0.5)
         print(f'Regression Task {self.label} Parameters: ')
         print(f'number of samples: {self.n_samples}, noise tolerance: {self.noise_tol}')
         print("BNN Parameters: ")
-        print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
+        print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, use_mixture_prior: {parameters["mixture_prior"]}, mu_init: {parameters["mu_init"]}, rho_init: {parameters["rho_init"]}, prior_init: {parameters["prior_init"]}, lr: {self.lr}')
 
     def train_step(self, train_data):
         self.net.train()
@@ -69,7 +70,7 @@ class BNN_Regression():
         with torch.no_grad():
             y_test = np.zeros((n_samples, x_test.shape[0]))
             for s in range(n_samples):
-                tmp = self.net(x_test.to(DEVICE)).detach().cpu().numpy()
+                tmp = self.net(x_test.to(DEVICE), sample=True).detach().cpu().numpy()
                 y_test[s,:] = tmp.reshape(-1)
             return y_test
 

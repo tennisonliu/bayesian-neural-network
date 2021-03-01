@@ -12,14 +12,17 @@ class RegConfig:
     batch_size = 128
     lr = 1e-3
     epochs = 1000
-    train_samples = 2 
+    train_samples = 1
     test_samples = 100
+    num_test_points = 400
     mode = 'regression'
+    mixture_prior = False
     hidden_units = 400
     noise_tolerance = .1
     mu_init = [-0.2, 0.2]           # range for mu 
     rho_init = [-5, -4]             # range for rho
-    prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
+    # prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
+    prior_init = [1]
 
 class RLConfig:
     data_dir = 'data/agaricus-lepiota.data'

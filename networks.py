@@ -1,6 +1,9 @@
 '''
 Components required to define Bayesian Neural Network
 -> Gaussian mixture prior + variational Gaussian posterior
+-> Bayesian fully connected layer
+-> Bayesian Neural Network
+-> Non-Bayesian MLP
 '''
 import torch
 import math
@@ -43,7 +46,7 @@ class GaussianNode:
 
 class BayesianLinear(nn.Module):
     ''' FC Layer with Bayesian Weights '''
-    def __init__(self, in_features, out_features, mu_init, rho_init, prior_init):
+    def __init__(self, in_features, out_features, mu_init, rho_init, prior_init, mixture_prior=True):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -56,8 +59,15 @@ class BayesianLinear(nn.Module):
         self.bias_rho = nn.Parameter(torch.Tensor(out_features).uniform_(*rho_init))
         self.bias = GaussianNode(self.bias_mu, self.bias_rho)
 
-        self.weight_prior = ScaleMixtureGaussian(prior_init[0], math.exp(prior_init[1]), math.exp(prior_init[2]))
-        self.bias_prior = ScaleMixtureGaussian(prior_init[0], math.exp(prior_init[1]), math.exp(prior_init[2]))
+        if mixture_prior:
+            assert len(prior_init)==3, "Scale Mixture Prior requires three values in prior initialisation"
+            self.weight_prior = ScaleMixtureGaussian(prior_init[0], math.exp(prior_init[1]), math.exp(prior_init[2]))
+            self.bias_prior = ScaleMixtureGaussian(prior_init[0], math.exp(prior_init[1]), math.exp(prior_init[2]))
+        else:
+            assert len(prior_init)==1, "Gaussian Prior requires one value in prior initialisation"
+            self.weight_prior = torch.distributions.Normal(0, prior_init[0])
+            self.bias_prior = torch.distributions.Normal(0, prior_init[0])
+
         self.log_prior = 0
         self.log_variational_posterior = 0
 
@@ -68,9 +78,10 @@ class BayesianLinear(nn.Module):
         else:
             weight = self.weight.mu
             bias = self.bias.mu
+
         if self.training or calculate_log_probs:
-            self.log_prior = self.weight_prior.log_prob(weight) + self.bias_prior.log_prob(bias)
-            self.log_variational_posterior = self.weight.log_prob(weight) + self.bias.log_prob(bias)
+            self.log_prior = (self.weight_prior.log_prob(weight) + self.bias_prior.log_prob(bias)).sum()
+            self.log_variational_posterior = (self.weight.log_prob(weight) + self.bias.log_prob(bias)).sum()
         else:
             self.log_prior, self.log_variational_posterior = 0, 0
 
@@ -88,12 +99,13 @@ class BayesianNetwork(nn.Module):
         self.mu_init = model_params['mu_init']
         self.rho_init = model_params['rho_init']
         self.prior_init = model_params['prior_init']
+        self.mixture_prior = model_params['mixture_prior']
 
-        self.l1 = BayesianLinear(self.input_shape, self.hidden_units, self.mu_init, self.rho_init, self.prior_init)
+        self.l1 = BayesianLinear(self.input_shape, self.hidden_units, self.mu_init, self.rho_init, self.prior_init, self.mixture_prior)
         self.l1_act = nn.ReLU()
-        self.l2 = BayesianLinear(self.hidden_units, self.hidden_units, self.mu_init, self.rho_init, self.prior_init)
+        self.l2 = BayesianLinear(self.hidden_units, self.hidden_units, self.mu_init, self.rho_init, self.prior_init, self.mixture_prior)
         self.l2_act = nn.ReLU()
-        self.l3 = BayesianLinear(self.hidden_units, self.classes, self.mu_init, self.rho_init, self.prior_init)
+        self.l3 = BayesianLinear(self.hidden_units, self.classes, self.mu_init, self.rho_init, self.prior_init, self.mixture_prior)
     
     def forward(self, x, sample=False):
         assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
@@ -121,13 +133,17 @@ class BayesianNetwork(nn.Module):
         outputs = torch.zeros(samples, self.batch_size, self.classes).to(DEVICE)
         log_priors = torch.zeros(samples).to(DEVICE)
         log_variational_posteriors = torch.zeros(samples).to(DEVICE)
+        negative_log_likelihoods = torch.zeros(samples).to(DEVICE)
+
         for i in range(samples):
             outputs[i] = self.forward(input, sample=True)
             log_priors[i] = self.log_prior()
             log_variational_posteriors[i] = self.log_variational_posterior()
+            negative_log_likelihoods[i] = self.get_nll(outputs[i], target, sigma)
+
         log_prior = beta*log_priors.mean()
         log_variational_posterior = beta*log_variational_posteriors.mean()
-        negative_log_likelihood = self.get_nll(outputs.mean(0).squeeze(), target, sigma)
+        negative_log_likelihood = negative_log_likelihoods.mean()
         loss = log_variational_posterior - log_prior + negative_log_likelihood
         return loss, log_priors.mean(), log_variational_posteriors.mean(), negative_log_likelihood
 
