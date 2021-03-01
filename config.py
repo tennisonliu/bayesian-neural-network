@@ -41,7 +41,7 @@ class RLConfig:
 class ClassConfig:
     batch_size = 128
     lr = 1e-4
-    epochs = 2
+    epochs = 200
     hidden_units = 400
     mode = 'classification'
     train_samples = 2
