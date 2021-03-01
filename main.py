@@ -107,7 +107,8 @@ def class_trainer():
     for epoch in range(epochs):
         print(f'Epoch {epoch+1}/{epochs}')
         for _, model in models.items():
-            model.train_step(train_ds, test_ds)
+            model.train_step(train_ds)
+            model.evaluate(test_ds)
             model.log_progress(epoch)
             model.scheduler.step()
 
