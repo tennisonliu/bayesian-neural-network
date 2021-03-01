@@ -73,7 +73,7 @@ class BNN_Classification():
         print('Evaluating on validation data')
         correct = 0
         total = 0
-
+self.net.eval()
         with torch.no_grad():
             for data in tqdm(test_loader):
                 X, y = data
