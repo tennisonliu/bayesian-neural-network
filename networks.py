@@ -94,7 +94,8 @@ class BayesianNetwork(nn.Module):
         self.l3 = BayesianLinear(self.hidden_units, self.classes)
     
     def forward(self, x, sample=False):
-        assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
+        if self.mode == 'classification':
+            x = x.view(-1, self.input_shape) # Flatten images
         x = self.l1_act(self.l1(x, sample))
         x = self.l2_act(self.l2(x, sample))
         x = self.l3(x, sample)
@@ -110,7 +111,7 @@ class BayesianNetwork(nn.Module):
         if self.mode == 'regression':
             ll = torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
         elif self.mode == 'classification':
-            ll = nn.CrossEntropy()
+            ll = -nn.CrossEntropyLoss()(outputs, target)
         else:
             raise Exception("Training mode must be either 'regression' or 'classification'")
         return -ll

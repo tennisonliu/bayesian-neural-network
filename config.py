@@ -25,3 +25,14 @@ class RLConfig:
     training_steps = 50000
     hidden_units = 100
     mode = 'regression'
+
+class ClassConfig:
+    batch_size = 128
+    lr = 1e-4
+    epochs = 300
+    hidden_units = 400
+    mode = 'classification'
+    train_samples = 2 
+    test_smaples = 30
+    x_shape = 28 * 28
+    classes = 10
