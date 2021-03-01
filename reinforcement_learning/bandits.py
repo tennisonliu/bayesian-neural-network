@@ -4,7 +4,6 @@ Two Contextual bandits
 2) MLP and epsilon-greedy poligy -> Greedy_Bandit
 Both derived from base_bandit.py class
 '''
-
 import torch
 import numpy as np
 from .base_bandit import Bandit
@@ -12,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import sys
 sys.path.append('../')
-from utils import *
+from logger_utils import *
 from networks import BayesianNetwork, MLP
 from config import DEVICE
 
@@ -21,13 +20,16 @@ class BNN_Bandit(Bandit):
         super().__init__(label, *args)
         self.writer = SummaryWriter(comment=f"_{label}_training")
     
-    def init_net(self):
+    def init_net(self, parameters):
         model_params = {
             'input_shape': self.x.shape[1]+2,
             'classes': 1 if len(self.y.shape)==1 else self.y.shape[1],
             'batch_size': self.batch_size,
-            'hidden_units': self.hidden_units,
-            'mode': self.mode
+            'hidden_units': parameters['hidden_units'],
+            'mode': parameters['mode'],
+            'mu_init': parameters['mu_init'],
+            'rho_init': parameters['rho_init'],
+            'prior_init': parameters['prior_init']
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
