@@ -133,7 +133,8 @@ def class_trainer():
         'mu_init': config.mu_init,
         'rho_init': config.rho_init,
         'prior_init': config.prior_init,
-        'mixture_prior':config.mixture_prior
+        'mixture_prior':config.mixture_prior,
+        'save_dir': config.save_dir
     }
 
     models = {'bnn': BNN_Classification('bnn_classification', params)}
@@ -147,6 +148,10 @@ def class_trainer():
             model.evaluate(test_ds)
             model.log_progress(epoch)
             model.scheduler.step()
+
+            if model.acc > model.best_acc:
+                    model.best_acc = model.acc
+                    torch.save(model.net.state_dict(), model.save_model_path)
 
 
 if __name__ == "__main__":

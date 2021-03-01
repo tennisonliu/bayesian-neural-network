@@ -1,4 +1,4 @@
-
+import os
 import torch
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
@@ -28,9 +28,14 @@ class BNN_Classification():
         self.rho_init = parameters['rho_init']
         self.prior_init = parameters['prior_init']
         self.mixture_prior = parameters['mixture_prior']
-        self.init_net()
+        self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
+        self.best_acc = 0.
+        self.init_net(parameters)
     
-    def init_net(self):
+    def init_net(self, parameters):
+        if not os.path.exists(parameters["save_dir"]):
+            os.makedirs(parameters["save_dir"])
+
         model_params = {
             'input_shape': self.x_shape,
             'classes': self.classes,
