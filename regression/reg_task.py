@@ -25,16 +25,11 @@ class BNN_Regression():
         self.n_samples = parameters['num_training_samples']
         self.x_shape = parameters['x_shape']
         self.y_shape = parameters['y_shape']
-<<<<<<< HEAD
-        self.nll_sigma = parameters['nll_sigma']
-        self.init_net()
-=======
         self.noise_tol = parameters['noise_tolerance']
         self.lr = parameters['lr']
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
         self.best_loss = np.inf
         self.init_net(parameters)
->>>>>>> master
     
     def init_net(self, parameters):
         if not os.path.exists(parameters["save_dir"]):
@@ -44,17 +39,11 @@ class BNN_Regression():
             'input_shape': self.x_shape,
             'classes': self.y_shape,
             'batch_size': self.batch_size,
-<<<<<<< HEAD
-            'hidden_units': self.hidden_units,
-            'mode': self.mode,
-            'nll_sigma': self.nll_sigma
-=======
             'hidden_units': parameters['hidden_units'],
             'mode': parameters['mode'],
             'mu_init': parameters['mu_init'],
             'rho_init': parameters['rho_init'],
             'prior_init': parameters['prior_init']
->>>>>>> master
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
