@@ -134,7 +134,7 @@ class MLP_Classification():
         for _, (x, y) in enumerate(tqdm(train_data)):
             x, y = x.to(DEVICE), y.to(DEVICE)
             self.net.zero_grad()
-            self.loss_info = torch.nn.functional.cross_entropy(self.net(x), y, reduction='mean')
+            self.loss_info = torch.nn.functional.cross_entropy(self.net(x), y, reduction='sum')
             self.loss_info.backward()
             self.optimiser.step()
 
