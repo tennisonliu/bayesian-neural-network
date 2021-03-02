@@ -105,17 +105,8 @@ def class_trainer():
     ''' MNIST classification Task Trainer'''
     config = ClassConfig
 
-    train_ds = DataLoader(
-        datasets.MNIST(
-        './mnist', train=True, download=True,
-        transform=transforms.ToTensor()),
-        batch_size=config.batch_size, shuffle=True, drop_last=True)
-
-    test_ds = DataLoader(
-        datasets.MNIST(
-        './mnist', train=False, download=True,
-        transform=transforms.ToTensor()),
-        batch_size=config.batch_size, shuffle=False, drop_last=True)
+    train_ds = create_data_class(train=True, batch_size=config.batch_size, shuffle=True)
+    test_ds = create_data_class(train=False, batch_size=config.batch_size, shuffle=False)
 
     params = {
         'lr': config.lr,
