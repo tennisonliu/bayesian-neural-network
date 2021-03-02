@@ -69,7 +69,7 @@ class BNN_Classification():
     def sample_predict(self, X):
         probs = torch.zeros(size=[self.batch_size, self.classes]).to(DEVICE)
         for _ in torch.arange(self.test_samples):
-            out = torch.nn.Softmax(dim=1)(self.net(X))
+            out = torch.nn.Softmax(dim=1)(self.net(X, sample=True))
             probs = probs + out / self.test_samples
         preds = torch.argmax(probs, dim=1)
         return preds
@@ -129,7 +129,7 @@ class MLP_Classification():
             self.net = MLP_Dropout(model_params).to(DEVICE)
         else:
             self.net = MLP(model_params).to(DEVICE)
-        self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        self.optimiser = torch.optim.SGD(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=100, gamma=0.5)
         print('MLP Parameters: ')
         print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
