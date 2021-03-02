@@ -4,7 +4,7 @@ Main script with trainers
 import numpy as np
 from reinforcement_learning.bandits import BNN_Bandit, Greedy_Bandit
 from regression.reg_task import BNN_Regression, MLP_Regression
-from classification.class_task import BNN_Classification, MLP_Classification#, Dropout_Classification
+from classification.class_task import BNN_Classification, MLP_Classification
 from tqdm import tqdm
 from config import *
 from data_utils import *
@@ -132,13 +132,17 @@ def class_trainer():
         'rho_init': config.rho_init,
         'prior_init': config.prior_init,
         'mixture_prior':config.mixture_prior,
-        'save_dir': config.save_dir
+        'save_dir': config.save_dir,
+        'dropout': False
     }
 
+    params_dropout = params
+    params_dropout['dropout'] = True
+
     models = {
-        #'bnn_class': BNN_Classification('bnn_classification', params),
+        'bnn_class': BNN_Classification('bnn_classification', params),
         'mlp_class': MLP_Classification('mlp_classification', params),
-        #'dropout_class': Dropout_Classification('dropout_classification', params),
+        'dropout_class': MLP_Classification('dropout_classification', params_dropout),
         }
     
     epochs = config.epochs

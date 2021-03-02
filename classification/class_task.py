@@ -7,7 +7,7 @@ from tqdm import tqdm
 import sys
 sys.path.append('../')
 from logger_utils import *
-from networks import BayesianNetwork, MLP
+from networks import BayesianNetwork, MLP, MLP_Dropout
 from config import DEVICE
 
 class BNN_Classification():
@@ -88,7 +88,7 @@ class BNN_Classification():
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total
-        print(f'Validation accuracy: {self.acc}')    
+        print(f'{self.label} validation accuracy: {self.acc}')    
 
     def log_progress(self, step):
         write_weight_histograms(self.writer, self.net, step)
@@ -110,6 +110,7 @@ class MLP_Classification():
         self.classes = parameters['classes']
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
         self.best_acc = 0.
+        self.dropout = parameters['dropout']
         self.init_net(parameters)
     
     def init_net(self, parameters):
@@ -122,8 +123,12 @@ class MLP_Classification():
             'batch_size': self.batch_size,
             'hidden_units': self.hidden_units,
             'mode': self.mode,
+            'dropout': self.dropout
         }
-        self.net = MLP(model_params).to(DEVICE)
+        if self.dropout:
+            self.net = MLP_Dropout(model_params).to(DEVICE)
+        else:
+            self.net = MLP(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=100, gamma=0.5)
         print('MLP Parameters: ')
@@ -157,7 +162,7 @@ class MLP_Classification():
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total
-        print(f'Validation accuracy: {self.acc}')    
+        print(f'{self.label} validation accuracy: {self.acc}')    
 
     def log_progress(self, step):
         write_loss(self.writer, self.loss_info, step)
