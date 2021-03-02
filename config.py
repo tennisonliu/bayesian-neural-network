@@ -37,15 +37,14 @@ class RLConfig:
     rho_init = [-5, -4]             # range for rho
     prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
 
-
 class ClassConfig:
     batch_size = 128
     lr = 1e-4
-    epochs = 1
+    epochs = 100
     hidden_units = 1200
     mode = 'classification'
     train_samples = 2
-    test_smaples = 10
+    test_samples = 10
     x_shape = 28 * 28
     classes = 10
     mu_init = [-0.2, 0.2]           # range for mu 

@@ -70,3 +70,14 @@ def create_data_reg(train_size):
     ys = torch.from_numpy(ys).reshape(-1,1).float()
 
     return xs, ys
+
+def create_data_class(train, batch_size, shuffle):
+
+    ds = DataLoader(
+        datasets.MNIST('./mnist', train=train, download=True, transform=transforms.ToTensor()),
+        batch_size=batch_size, 
+        shuffle=shuffle, 
+        drop_last=True
+    )
+
+    return ds

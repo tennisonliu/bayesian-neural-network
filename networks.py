@@ -125,7 +125,7 @@ class BayesianNetwork(nn.Module):
         if self.mode == 'regression':
             nll = -torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
         elif self.mode == 'classification':
-            nll = nn.CrossEntropyLoss()(outputs, target)
+            nll = nn.CrossEntropyLoss(reduction='sum')(outputs, target)
         else:
             raise Exception("Training mode must be either 'regression' or 'classification'")
         return nll
@@ -164,7 +164,40 @@ class MLP(nn.Module):
             nn.Linear(self.hidden_units, self.classes))
     
     def forward(self, x):
-        assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
+        if self.mode == 'classification':
+            assert len(x.shape) == 4, "Input dimensions incorrect, expected shape = (batch_size, sample, x_dim[0], x_dim[1])"
+            x = x.view(-1, self.input_shape) # Flatten images
+        else:    
+            assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
+        
+        x = self.net(x)
+        return x
+
+class MLP_Dropout(nn.Module):
+    def __init__(self, model_params):
+        super().__init__()
+        self.input_shape = model_params['input_shape']
+        self.classes = model_params['classes']
+        self.batch_size = model_params['batch_size']
+        self.hidden_units = model_params['hidden_units']
+        self.mode = model_params['mode']
+
+        self.net = nn.Sequential(
+            nn.Linear(self.input_shape, self.hidden_units),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(self.hidden_units, self.hidden_units),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(self.hidden_units, self.classes))
+    
+    def forward(self, x):
+        if self.mode == 'classification':
+            assert len(x.shape) == 4, "Input dimensions incorrect, expected shape = (batch_size, sample, x_dim[0], x_dim[1])"
+            x = x.view(-1, self.input_shape) # Flatten images
+        else:    
+            assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
+        
         x = self.net(x)
         return x
 
