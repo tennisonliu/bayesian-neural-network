@@ -125,7 +125,7 @@ class BayesianNetwork(nn.Module):
         if self.mode == 'regression':
             nll = -torch.distributions.Normal(outputs, sigma).log_prob(target).sum()
         elif self.mode == 'classification':
-            nll = nn.CrossEntropyLoss()(outputs, target)
+            nll = nn.CrossEntropyLoss(reduction='sum')(outputs, target)
         else:
             raise Exception("Training mode must be either 'regression' or 'classification'")
         return nll
