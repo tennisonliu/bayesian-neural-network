@@ -164,7 +164,11 @@ class MLP(nn.Module):
             nn.Linear(self.hidden_units, self.classes))
     
     def forward(self, x):
-        assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
+        if self.mode == 'classification':
+            assert len(x.shape) == 4, "Input dimensions incorrect, expected shape = (batch_size, sample, x_dim[0], x_dim[1])"
+            x = x.view(-1, self.input_shape) # Flatten images
+        else:    
+            assert len(x.shape) == 2, "Input dimensions incorrect, expected shape = (batch_size, sample,...)"
         x = self.net(x)
         return x
 

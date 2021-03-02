@@ -4,7 +4,7 @@ Main script with trainers
 import numpy as np
 from reinforcement_learning.bandits import BNN_Bandit, Greedy_Bandit
 from regression.reg_task import BNN_Regression, MLP_Regression
-from classification.class_task import BNN_Classification
+from classification.class_task import BNN_Classification, MLP_Classification#, Dropout_Classification
 from tqdm import tqdm
 from config import *
 from data_utils import *
@@ -65,7 +65,6 @@ def reg_trainer():
             create_regression_plot(x_test.cpu().numpy(), y_test.reshape(1, -1), train_ds, m_name)
 
 
-
 def rl_trainer():
     ''' RL Bandit Task Trainer'''
     config = RLConfig
@@ -112,7 +111,6 @@ def class_trainer():
         transform=transforms.ToTensor()),
         batch_size=config.batch_size, shuffle=True, drop_last=True)
 
-        
     test_ds = DataLoader(
         datasets.MNIST(
         './mnist', train=False, download=True,
@@ -129,7 +127,7 @@ def class_trainer():
         'classes': config.classes,
         'num_batches': len(train_ds),
         'train_samples': config.train_samples,
-        'test_samples': config.test_smaples,
+        'test_samples': config.test_samples,
         'mu_init': config.mu_init,
         'rho_init': config.rho_init,
         'prior_init': config.prior_init,
@@ -137,7 +135,11 @@ def class_trainer():
         'save_dir': config.save_dir
     }
 
-    models = {'bnn': BNN_Classification('bnn_classification', params)}
+    models = {
+        #'bnn_class': BNN_Classification('bnn_classification', params),
+        'mlp_class': MLP_Classification('mlp_classification', params),
+        #'dropout_class': Dropout_Classification('dropout_classification', params),
+        }
     
     epochs = config.epochs
     print(f"Initialising training on {DEVICE}...")
@@ -150,8 +152,8 @@ def class_trainer():
             model.scheduler.step()
 
             if model.acc > model.best_acc:
-                    model.best_acc = model.acc
-                    torch.save(model.net.state_dict(), model.save_model_path)
+                model.best_acc = model.acc
+                torch.save(model.net.state_dict(), model.save_model_path)
 
 
 if __name__ == "__main__":
