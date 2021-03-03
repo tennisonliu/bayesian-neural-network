@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.append('../')
 from logger_utils import *
-from networks import BayesianNetwork, MLP
+from networks import BayesianNetwork, MLP, MLP_Dropout, enable_dropout
 from config import DEVICE
 
 class BNN_Regression():
@@ -21,7 +21,8 @@ class BNN_Regression():
         self.label = label
         self.batch_size = parameters['batch_size']
         self.num_batches = parameters['num_batches']
-        self.n_samples = parameters['num_training_samples']
+        self.n_samples = parameters['train_samples']
+        self.test_samples = parameters['test_samples']
         self.x_shape = parameters['x_shape']
         self.y_shape = parameters['y_shape']
         self.noise_tol = parameters['noise_tolerance']
@@ -65,11 +66,11 @@ class BNN_Regression():
             self.optimiser.step()
         self.epoch_loss = net_loss.item()
 
-    def evaluate(self, x_test, n_samples):
+    def evaluate(self, x_test):
         self.net.eval()
         with torch.no_grad():
-            y_test = np.zeros((n_samples, x_test.shape[0]))
-            for s in range(n_samples):
+            y_test = np.zeros((self.test_samples, x_test.shape[0]))
+            for s in range(self.test_samples):
                 tmp = self.net(x_test.to(DEVICE), sample=True).detach().cpu().numpy()
                 y_test[s,:] = tmp.reshape(-1)
             return y_test
@@ -122,7 +123,7 @@ class MLP_Regression():
 
         self.epoch_loss = self.loss_info.item()
 
-    def evaluate(self, x_test, n_samples=0):
+    def evaluate(self, x_test):
         self.net.eval()
         with torch.no_grad():
             y_test = self.net(x_test.to(DEVICE)).detach().cpu().numpy()
