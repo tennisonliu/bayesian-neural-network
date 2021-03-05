@@ -77,6 +77,7 @@ def rl_trainer():
         'lr': config.lr,
         'hidden_units': config.hidden_units,
         'mode': config.mode,
+        'mixture_prior': config.mixture_prior,
         'mu_init': config.mu_init,
         'rho_init': config.rho_init,
         'prior_init': config.prior_init
