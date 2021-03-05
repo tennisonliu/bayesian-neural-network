@@ -8,11 +8,11 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class RegConfig:
     save_dir = './saved_models'
-    train_size = 2048
+    train_size = 1024
     batch_size = 128
     lr = 1e-3
     epochs = 1000
-    train_samples = 2
+    train_samples = 5
     test_samples = 100
     num_test_points = 400
     mode = 'regression'

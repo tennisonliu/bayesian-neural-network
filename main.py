@@ -3,7 +3,7 @@ Main script with trainers
 '''
 import numpy as np
 from reinforcement_learning.bandits import BNN_Bandit, Greedy_Bandit
-from regression.reg_task import BNN_Regression, MLP_Regression
+from regression.reg_task import BNN_Regression, MLP_Regression, MCDropout_Regression
 from classification.class_task import BNN_Classification, MLP_Classification
 from tqdm import tqdm
 from config import *
@@ -25,18 +25,20 @@ def reg_trainer():
         'num_batches': len(train_ds),
         'x_shape': X.shape[1],
         'y_shape': Y.shape[1],
-        'num_training_samples': config.train_samples,
+        'train_samples': config.train_samples,
+        'test_samples': config.test_samples,
         'noise_tolerance': config.noise_tolerance,
         'mixture_prior': config.mixture_prior,
         'mu_init': config.mu_init,
         'rho_init': config.rho_init,
         'prior_init': config.prior_init,
-        'save_dir': config.save_dir
+        'save_dir': config.save_dir,
     }
 
     models = {
         'bnn_reg': BNN_Regression('bnn_regression', params),
         'mlp_reg': MLP_Regression('mlp_regression', params),
+        'mcdropout_reg': MCDropout_Regression('mcdropout_regression', params),
     }
 
     epochs = config.epochs
@@ -58,11 +60,11 @@ def reg_trainer():
     x_test = torch.linspace(-2., 2, config.num_test_points).reshape(-1, 1)
     for m_name, model in models.items():
         model.net.load_state_dict(torch.load(model.save_model_path, map_location=torch.device(DEVICE)))
-        y_test = model.evaluate(x_test, config.num_test_points)
-        if m_name == 'bnn_reg':
-            create_regression_plot(x_test.cpu().numpy(), y_test, train_ds, m_name)
-        else:
+        y_test = model.evaluate(x_test)
+        if m_name == 'mlp_reg':
             create_regression_plot(x_test.cpu().numpy(), y_test.reshape(1, -1), train_ds, m_name)
+        else:
+            create_regression_plot(x_test.cpu().numpy(), y_test, train_ds, m_name)
 
 
 def rl_trainer():

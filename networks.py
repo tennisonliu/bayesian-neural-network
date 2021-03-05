@@ -202,3 +202,9 @@ class MLP_Dropout(nn.Module):
         x = self.net(x)
         return x
 
+    def enable_dropout(self):
+        ''' Enable the dropout layers during test-time '''
+        for m in self.modules():
+            if m.__class__.__name__.startswith('Dropout'):
+                m.train()
+
