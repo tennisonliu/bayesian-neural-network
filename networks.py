@@ -44,12 +44,6 @@ class GaussianNode:
     def log_prob(self, input):
         return (-math.log(math.sqrt(2 * math.pi)) - torch.log(self.sigma) - ((input - self.mu) ** 2) / (2 * self.sigma ** 2)).sum()
 
-def enable_dropout(model):
-    """ Function to enable the dropout layers during test-time """
-    for m in model.modules():
-        if m.__class__.__name__.startswith('Dropout'):
-            m.train()
-
 class BayesianLinear(nn.Module):
     ''' FC Layer with Bayesian Weights '''
     def __init__(self, in_features, out_features, mu_init, rho_init, prior_init, mixture_prior=True):
@@ -207,4 +201,10 @@ class MLP_Dropout(nn.Module):
         
         x = self.net(x)
         return x
+
+    def enable_dropout(self):
+        ''' Enable the dropout layers during test-time '''
+        for m in self.modules():
+            if m.__class__.__name__.startswith('Dropout'):
+                m.train()
 

@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 import sys
 sys.path.append('../')
 from logger_utils import *
-from networks import BayesianNetwork, MLP, MLP_Dropout, enable_dropout
+from networks import BayesianNetwork, MLP, MLP_Dropout
 from config import DEVICE
 
 class BNN_Regression():
@@ -179,7 +179,7 @@ class MCDropout_Regression():
 
     def evaluate(self, x_test):
         self.net.eval()
-        enable_dropout(self.net) # Set dropout layers to train mode
+        self.net.enable_dropout() # Set dropout layers to train mode
         with torch.no_grad():
             y_test = np.zeros((self.test_samples, x_test.shape[0]))
             for s in range(self.test_samples):

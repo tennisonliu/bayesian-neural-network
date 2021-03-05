@@ -36,8 +36,8 @@ def reg_trainer():
     }
 
     models = {
-        'bnn_reg': BNN_Regression('bnn_regression', params),
-        'mlp_reg': MLP_Regression('mlp_regression', params),
+        #'bnn_reg': BNN_Regression('bnn_regression', params),
+        #'mlp_reg': MLP_Regression('mlp_regression', params),
         'mcdropout_reg': MCDropout_Regression('mcdropout_regression', params),
     }
 
