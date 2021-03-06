@@ -36,9 +36,10 @@ def reg_trainer():
     }
 
     models = {
-        'bnn_reg': BNN_Regression('bnn_regression', params),
-        'mlp_reg': MLP_Regression('mlp_regression', params),
-        'mcdropout_reg': MCDropout_Regression('mcdropout_regression', params),
+        'bnn_reg': BNN_Regression('bnn_regression', {**params, 'local_reparam': False}),
+        'bnn_reg_lr' : BNN_Regression('bnn_regression_lr', {**params, 'local_reparam': True}),
+        'mlp_reg': MLP_Regression('mlp_regression', {**params, 'local_reparam': False}),
+        'mcdropout_reg': MCDropout_Regression('mcdropout_regression', {**params, 'local_reparam': False}),
     }
 
     epochs = config.epochs
@@ -130,13 +131,10 @@ def class_trainer():
         'dropout': False
     }
 
-    params_dropout = params
-    params_dropout['dropout'] = True
-
     models = {
-        'bnn_class': BNN_Classification('bnn_classification', params),
-        'mlp_class': MLP_Classification('mlp_classification', params),
-        'dropout_class': MLP_Classification('dropout_classification', params_dropout),
+        'bnn_class': BNN_Classification('bnn_classification', {**params, 'dropout': False}),
+        'mlp_class': MLP_Classification('mlp_classification', {**params, 'dropout': False}),
+        'dropout_class': MLP_Classification('dropout_classification', {**params, 'dropout': True}),
         }
     
     epochs = config.epochs
