@@ -116,32 +116,15 @@ class BayesianLinearLR(nn.Module):
         if self.training or sample: 
             w_sigma = torch.log1p(torch.exp(self.weight_rho))
             b_sigma = torch.log1p(torch.exp(self.bias_rho))
-
-            # print(input.shape)
-            # print(self.weight_mu.shape)
-
             activation_mu = torch.mm(input, self.weight_mu)
             activation_sigma = torch.sqrt(torch.mm(input.pow(2), w_sigma.pow(2)))
 
-            # print(activation_mu.shape)
-            # print(activation_sigma.shape)
-
             w_epsilon = self.normal.sample(activation_sigma.size()).to(DEVICE)
             b_epsilon = self.normal.sample(b_sigma.size()).to(DEVICE)
-
-            # print(w_epsilon.shape)
-            # print(b_epsilon.shape)
-
             activation_w = activation_mu + activation_sigma * w_epsilon
             activation_b = self.bias_mu + b_sigma * b_epsilon
 
-            # print(activation_w.shape)
-            # print(activation_b.shape)
-
             activation =  activation_w + activation_b.unsqueeze(0).expand(input.shape[0], -1)
-            # print(activation.shape)
-
-            # print(freeze)
 
         else:
             activation = torch.mm(input, self.weight_mu) + self.b_mu
