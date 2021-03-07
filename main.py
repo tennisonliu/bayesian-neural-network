@@ -129,14 +129,14 @@ def class_trainer():
         'dropout': False
     }
 
-    params_dropout = params
+    params_dropout = params.copy()
     params_dropout['dropout'] = True
 
     models = {
         'bnn_class': BNN_Classification('bnn_classification', params),
         'mlp_class': MLP_Classification('mlp_classification', params),
         'dropout_class': MLP_Classification('dropout_classification', params_dropout),
-        }
+    }
     
     epochs = config.epochs
     print(f"Initialising training on {DEVICE}...")
