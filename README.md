@@ -14,7 +14,7 @@ Training and evaluation of the model are actioned through `main.py`, the main en
 * `/reinforcement_learning`, &
 * `/classification`.
 
-Helper functions are included for loading data `data_utils.py` and logging progress `utils.py`. 
+Helper functions are included for loading data `data_utils.py` and logging progress `logger_utils.py` and plotting `plot_utils.py`. 
 
 At run-time, `main` reads from a model configuration set in `config.py`. The configurations required to replicate the results of the paper are presented as-is. 
 
@@ -22,3 +22,6 @@ At run-time, `main` reads from a model configuration set in `config.py`. The con
 ```
 python3 main.py --model [regression|classification|rl]
 ```
+
+## TODO: 
+* Refactor `reg_task.py`, `class_task` into base and derived classes / sort out inheritance.

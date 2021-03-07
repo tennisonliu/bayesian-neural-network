@@ -33,6 +33,7 @@ class RLConfig:
     training_steps = 50000
     mode = 'regression'
     hidden_units = 100
+    mixture_prior = True
     mu_init = [-0.2, 0.2]           # range for mu 
     rho_init = [-5, -4]             # range for rho
     prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)

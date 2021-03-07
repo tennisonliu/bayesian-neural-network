@@ -3,6 +3,13 @@ Helper function to log progress to Tensorboard
 '''
 import torch
 
+def write_bandit_action(writer, action_class, step):
+    ''' Logging tool to record bandit actions '''
+    writer.add_scalar('actions/tp', action_class[0], step)
+    writer.add_scalar('actions/fp', action_class[1], step)
+    writer.add_scalar('actions/tn', action_class[2], step)
+    writer.add_scalar('actions/fn', action_class[3], step)
+
 def write_weight_histograms(writer, net, step):
     ''' Logging tool for BNN '''
     writer.add_histogram('histogram/w1_mu', net.l1.weight_mu, step)
@@ -20,11 +27,16 @@ def write_weight_histograms(writer, net, step):
 
 def write_loss_scalars(writer, loss, step):
     ''' Logging tool for BNN '''
-    writer.add_scalar('logs/loss', loss[0], step)
-    writer.add_scalar('logs/complexity_cost', loss[2]-loss[1], step)
-    writer.add_scalar('logs/log_prior', loss[1], step)
-    writer.add_scalar('logs/log_variational_posterior', loss[2], step)
-    writer.add_scalar('logs/negative_log_likelihood', loss[3], step)
+    if len(loss) == 4:
+        writer.add_scalar('logs/loss', loss[0], step)
+        writer.add_scalar('logs/complexity_cost', loss[2]-loss[1], step)
+        writer.add_scalar('logs/log_prior', loss[1], step)
+        writer.add_scalar('logs/log_variational_posterior', loss[2], step)
+        writer.add_scalar('logs/negative_log_likelihood', loss[3], step)
+    else:
+        writer.add_scalar('logs/loss', loss[0], step)
+        writer.add_scalar('logs/complexity_cost', loss[1], step)
+        writer.add_scalar('logs/negative_log_likelihood', loss[2], step)
 
 def write_loss(writer, loss, step):
     ''' Logging tool MLP '''
