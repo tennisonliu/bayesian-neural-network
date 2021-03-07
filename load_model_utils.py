@@ -19,8 +19,8 @@ def load_bnn_class_model(saved_model):
     }
     model = BayesianNetwork(model_params)
     model.load_state_dict(torch.load(saved_model))
-
-    return model.eval()
+    model.eval()
+    return model
 
 def load_mlp_class_model(saved_model):
     '''Load model weights from path saved_model.'''
@@ -35,8 +35,8 @@ def load_mlp_class_model(saved_model):
     }
     model = MLP(model_params)
     model.load_state_dict(torch.load(saved_model))
-
-    return model.eval()
+    model.eval()
+    return model
 
 def load_dropout_class_model(saved_model):
     '''Load model weights from path saved_model.'''
@@ -49,7 +49,8 @@ def load_dropout_class_model(saved_model):
             'mode': config.mode,
             'dropout': True
     }
+
     model = MLP_Dropout(model_params)
     model.load_state_dict(torch.load(saved_model))
-
-    return model.eval()
+    model.eval()
+    return model
