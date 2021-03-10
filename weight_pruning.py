@@ -82,10 +82,10 @@ def prune_weights(model, snrs, drop_percentage=0.5):
         # loop through weights
         for layer in model.children():
             if isinstance(layer, BayesianLinear):
-                weight_mus = layer.weight_mu
-                weight_rhos = layer.weight_rho
-                bias_mus = layer.bias_mu
-                bias_rhos = layer.bias_rho
+                weight_mus = layer.weight_mu.data
+                weight_rhos = layer.weight_rho.data
+                bias_mus = layer.bias_mu.data
+                bias_rhos = layer.bias_rho.data
                 weight_sigmas = torch.log1p(torch.exp(weight_rhos))
                 bias_sigmas = torch.log1p(torch.exp(bias_rhos))
 
@@ -94,17 +94,16 @@ def prune_weights(model, snrs, drop_percentage=0.5):
                 assert snrs.shape[0]==weight_mus.shape[0] and snrs.shape[1]==weight_mus.shape[1], 'SNR not same shape as mus'      
                 mask = snrs > snr_threshold
                 mask = mask.long()
-                layer.weight_mu = torch.nn.Parameter(weight_mus*mask)
-                layer.weight_rho = torch.nn.Parameter(weight_rhos*mask)
+                layer.weight_mu.data = weight_mus*mask
+                layer.weight_rho.data = weight_rhos*mask
                 
                 # biases
                 snrs = 10*torch.log10(torch.abs(bias_mus)/bias_sigmas)
                 assert snrs.shape[0]==bias_mus.shape[0], 'SNR not same shape as mus'      
                 mask = snrs > snr_threshold
                 mask = mask.long()
-                layer.bias_mu = torch.nn.Parameter(bias_mus*mask)
-                layer.bias_rho = torch.nn.Parameter(bias_rhos*mask)
-
+                layer.bias_mu.data = bias_mus*mask
+                layer.bias_rho.data = bias_rhos*mask
     
 def predict(model, X):
     probs = torch.nn.Softmax(dim=1)(model(X))
@@ -129,24 +128,25 @@ def evaluate(model, test_loader):
 def main():
     # load models
     bnn_model = load_bnn_class_model('./saved_models/bnn_classification_model.pt')
-    mlp_model = load_mlp_class_model('./saved_models/mlp_classification_model.pt')
-    dropout_model = load_dropout_class_model('./saved_models/dropout_classification_model.pt')
+    bnn_model.to(DEVICE)
+    # mlp_model = load_mlp_class_model('./saved_models/mlp_classification_model.pt')
+    # dropout_model = load_dropout_class_model('./saved_models/dropout_classification_model.pt')
        
     # collect weights
     bnn_mus, bnn_sigmas = collect_weights(bnn_model, bnn=True)
     bnn_weights = [sample_bnn_weights(mu, sigma) for mu, sigma in zip(bnn_mus, bnn_sigmas)]
-    mlp_weights = collect_weights(mlp_model)
-    dropout_weights = collect_weights(dropout_model)
+    # mlp_weights = collect_weights(mlp_model)
+    # dropout_weights = collect_weights(dropout_model)
     
     # create weights histogram
-    plot_histogram(
-        [bnn_weights, mlp_weights, dropout_weights], 
-        ['BNN', 'Vanilla SGD', 'Dropout']
-    )
+    # plot_histogram(
+    #     [bnn_weights, mlp_weights, dropout_weights], 
+    #     ['BNN', 'Vanilla SGD', 'Dropout']
+    # )
 
     # plot snr densities
     snr = [compute_snr(mu, sigma) for mu, sigma in zip(bnn_mus, bnn_sigmas)]
-    snr_plots(snr)
+    # snr_plots(snr)
 
     # perform pruning
     pruned_bnn_model = copy.deepcopy(bnn_model)
@@ -154,7 +154,7 @@ def main():
     print(pruned_bnn_model.state_dict())
     
     print('-------- after pruning --------')
-    prune_weights(pruned_bnn_model, snr, drop_percentage=1.)
+    prune_weights(pruned_bnn_model, snr, drop_percentage=.8)
     print(pruned_bnn_model.state_dict())
 
     # evaluate pruned model
@@ -164,7 +164,6 @@ def main():
         test_ds = create_data_class(train=False, batch_size=128, shuffle=False)
         evaluate(pruned_bnn_model.to(DEVICE), test_ds)
         evaluate(bnn_model.to(DEVICE), test_ds)
-
 
 if __name__=='__main__':
     main()
