@@ -128,7 +128,7 @@ def class_trainer():
         'prior_init': config.prior_init,
         'mixture_prior':config.mixture_prior,
         'save_dir': config.save_dir,
-        'dropout': False
+        'local_reparam':config.local_reparam
     }
 
     models = {
