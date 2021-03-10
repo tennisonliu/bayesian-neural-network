@@ -41,7 +41,7 @@ class RLConfig:
 class ClassConfig:
     batch_size = 128
     lr = 1e-4
-    epochs = 100
+    epochs = 300
     hidden_units = 1200
     mode = 'classification'
     train_samples = 2
@@ -50,6 +50,8 @@ class ClassConfig:
     classes = 10
     mu_init = [-0.2, 0.2]           # range for mu 
     rho_init = [-5, -4]             # range for rho
-    prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)
-    mixture_prior=True
+    #prior_init = [0.5, -0, -8]      # mixture weight, log(sigma1), log(sigma2)
+    prior_init = [1.]
+    mixture_prior=False
     save_dir = './saved_models'
+    local_reparam=True
