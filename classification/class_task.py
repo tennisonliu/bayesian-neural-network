@@ -46,6 +46,7 @@ class BNN_Classification():
             'rho_init': self.rho_init,
             'prior_init': self.prior_init,
             'mixture_prior': self.mixture_prior
+            'local_reparam':self.local_reparam
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
