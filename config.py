@@ -5,7 +5,7 @@ import torch
 
 global DEVICE
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+DEVICE='cpu'
 class RegConfig:
     save_dir = './saved_models'
     train_size = 1024
