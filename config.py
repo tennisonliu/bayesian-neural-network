@@ -50,8 +50,8 @@ class ClassConfig:
     classes = 10
     mu_init = [-0.2, 0.2]           # range for mu 
     rho_init = [-5, -4]             # range for rho
-    #prior_init = [0.5, -0, -8]      # mixture weight, log(sigma1), log(sigma2)
-    prior_init = [1.]
-    mixture_prior=False
+    prior_init = [0.5, -0, -8]      # mixture weight, log(sigma1), log(sigma2)
+    #prior_init = [1.]
+    mixture_prior=True
     save_dir = './saved_models'
-    local_reparam=True
+    local_reparam=False
