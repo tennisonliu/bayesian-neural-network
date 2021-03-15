@@ -46,8 +46,9 @@ def plot_histogram(weights_list, labels):
     fig = plt.gcf()   
     fig.set_size_inches(5, 3.5) 
     for weights, label in zip(weights_list, labels):
-        plt.hist(weights, alpha=0.5, density=True, label=label, bins=100)
+        plt.hist(weights, alpha=0.5, density=True, label=label, bins=200, histtype='stepfilled')
     plt.xlim(-0.3, 0.3)
+    plt.xlabel('Probability density')
     plt.legend()
     plt.savefig('./graphs/weights_histogram.png')
     plt.close()
@@ -129,20 +130,20 @@ def main():
     # load models
     bnn_model = load_bnn_class_model('./saved_models/bnn_classification_model.pt')
     bnn_model.to(DEVICE)
-    # mlp_model = load_mlp_class_model('./saved_models/mlp_classification_model.pt')
-    # dropout_model = load_dropout_class_model('./saved_models/dropout_classification_model.pt')
+    mlp_model = load_mlp_class_model('./saved_models/mlp_classification_model.pt')
+    dropout_model = load_dropout_class_model('./saved_models/dropout_classification_model.pt')
        
     # collect weights
     bnn_mus, bnn_sigmas = collect_weights(bnn_model, bnn=True)
     bnn_weights = [sample_bnn_weights(mu, sigma) for mu, sigma in zip(bnn_mus, bnn_sigmas)]
-    # mlp_weights = collect_weights(mlp_model)
-    # dropout_weights = collect_weights(dropout_model)
+    mlp_weights = collect_weights(mlp_model)
+    dropout_weights = collect_weights(dropout_model)
     
     # create weights histogram
-    # plot_histogram(
-    #     [bnn_weights, mlp_weights, dropout_weights], 
-    #     ['BNN', 'Vanilla SGD', 'Dropout']
-    # )
+    plot_histogram(
+        [bnn_weights, mlp_weights, dropout_weights], 
+        ['BNN', 'Vanilla SGD', 'Dropout']
+    )
 
     # plot snr densities
     snr = [compute_snr(mu, sigma) for mu, sigma in zip(bnn_mus, bnn_sigmas)]
