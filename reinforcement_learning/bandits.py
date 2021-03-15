@@ -27,6 +27,7 @@ class BNN_Bandit(Bandit):
             'batch_size': self.batch_size,
             'hidden_units': parameters['hidden_units'],
             'mode': parameters['mode'],
+            'mixture_prior': parameters['mixture_prior'],
             'mu_init': parameters['mu_init'],
             'rho_init': parameters['rho_init'],
             'prior_init': parameters['prior_init']
@@ -52,6 +53,7 @@ class BNN_Bandit(Bandit):
     def log_progress(self, step):
         write_weight_histograms(self.writer, self.net, step)
         write_loss_scalars(self.writer, self.loss_info, step)
+        write_bandit_action(self.writer, [self.tp, self.fp, self.tn, self.fn], step)
         self.writer.add_scalar('logs/cumulative_regret', self.cumulative_regrets[-1], step)
 
 class Greedy_Bandit(Bandit):
@@ -59,13 +61,13 @@ class Greedy_Bandit(Bandit):
         super().__init__(label, *args)
         self.writer = SummaryWriter(comment=f"_{label}_training"),
     
-    def init_net(self):
+    def init_net(self, parameters):
         model_params = {
             'input_shape': self.x.shape[1]+2,
             'classes': 1 if len(self.y.shape)==1 else self.y.shape[1],
             'batch_size': self.batch_size,
-            'hidden_units': self.hidden_units,
-            'mode': self.mode
+            'hidden_units': parameters['hidden_units'],
+            'mode': parameters['mode']
         }
         self.net = MLP(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)

@@ -28,6 +28,7 @@ class BNN_Regression():
         self.noise_tol = parameters['noise_tolerance']
         self.lr = parameters['lr']
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
+        self.local_reparam = parameters['local_reparam']
         self.best_loss = np.inf
         self.init_net(parameters)
     
@@ -39,6 +40,7 @@ class BNN_Regression():
             'input_shape': self.x_shape,
             'classes': self.y_shape,
             'batch_size': self.batch_size,
+            'local_reparam': self.local_reparam,
             'hidden_units': parameters['hidden_units'],
             'mode': parameters['mode'],
             'mixture_prior': parameters['mixture_prior'],
@@ -50,7 +52,7 @@ class BNN_Regression():
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=500, gamma=0.5)
         print(f'Regression Task {self.label} Parameters: ')
-        print(f'number of samples: {self.n_samples}, noise tolerance: {self.noise_tol}')
+        print(f'number of samples: {self.n_samples}, noise tolerance: {self.noise_tol}, training with local reparameterisation: {model_params["local_reparam"]}')
         print("BNN Parameters: ")
         print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, use_mixture_prior: {parameters["mixture_prior"]}, mu_init: {parameters["mu_init"]}, rho_init: {parameters["rho_init"]}, prior_init: {parameters["prior_init"]}, lr: {self.lr}')
 
@@ -60,7 +62,11 @@ class BNN_Regression():
             beta = 2 ** (self.num_batches - (idx + 1)) / (2 ** self.num_batches - 1) 
             x, y = x.to(DEVICE), y.to(DEVICE)
             self.net.zero_grad()
-            self.loss_info = self.net.sample_elbo(x, y, beta, self.n_samples, sigma=self.noise_tol)
+            # sample loss depending on LR
+            if self.local_reparam:
+                self.loss_info = self.net.sample_elbo_lr(x, y, beta, self.n_samples, sigma=self.noise_tol)
+            else:
+                self.loss_info = self.net.sample_elbo(x, y, beta, self.n_samples, sigma=self.noise_tol)
             net_loss = self.loss_info[0]
             net_loss.backward()
             self.optimiser.step()

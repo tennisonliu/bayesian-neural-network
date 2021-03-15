@@ -21,6 +21,7 @@ class Bandit():
         self.x, self.y = x, y
         self.label = label
         self.init_net(bandit_params)
+        self.tp, self.tn, self.fp, self.fn = 0, 0, 0, 0
 
     def get_agent_reward(self, eaten, edible):
         if not eaten:
@@ -49,6 +50,16 @@ class Bandit():
         if np.random.rand() < self.epsilon:
             eat = (np.random.rand() < 0.5)
         agent_reward = self.get_agent_reward(eat, edible)
+
+        # record bandit action
+        if edible and eat:
+            self.tp += 1
+        elif edible and not eat:
+            self.fn += 1
+        elif not edible and eat:
+            self.fp += 1
+        else:
+            self.tn += 1
 
         # record context, action, reward
         action = torch.Tensor([1, 0] if eat else [0, 1])

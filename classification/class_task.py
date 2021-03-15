@@ -29,6 +29,7 @@ class BNN_Classification():
         self.prior_init = parameters['prior_init']
         self.mixture_prior = parameters['mixture_prior']
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
+        self.local_reparam = parameters['local_reparam']
         self.best_acc = 0.
         self.init_net(parameters)
     
@@ -45,7 +46,8 @@ class BNN_Classification():
             'mu_init': self.mu_init,
             'rho_init': self.rho_init,
             'prior_init': self.prior_init,
-            'mixture_prior': self.mixture_prior
+            'mixture_prior': self.mixture_prior,
+            'local_reparam': self.local_reparam
         }
         self.net = BayesianNetwork(model_params).to(DEVICE)
         self.optimiser = torch.optim.Adam(self.net.parameters(), lr=self.lr)
@@ -61,7 +63,10 @@ class BNN_Classification():
             beta = 2 ** (self.num_batches - (idx + 1)) / (2 ** self.num_batches - 1) 
             x, y = x.to(DEVICE), y.to(DEVICE)
             self.net.zero_grad()
-            self.loss_info = self.net.sample_elbo(x, y, beta, self.n_samples)
+            if self.local_reparam:
+                self.loss_info = self.net.sample_elbo_lr(x, y, beta, self.n_samples)
+            else:
+                self.loss_info = self.net.sample_elbo(x, y, beta, self.n_samples)            
             net_loss = self.loss_info[0]
             net_loss.backward()
             self.optimiser.step()
@@ -111,6 +116,7 @@ class MLP_Classification():
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
         self.best_acc = 0.
         self.dropout = parameters['dropout']
+        self.local_reparam = parameters['local_reparam']
         self.init_net(parameters)
     
     def init_net(self, parameters):
@@ -123,7 +129,8 @@ class MLP_Classification():
             'batch_size': self.batch_size,
             'hidden_units': self.hidden_units,
             'mode': self.mode,
-            'dropout': self.dropout
+            'dropout': self.dropout,
+            'local_reparam': self.local_reparam,
         }
         if self.dropout:
             self.net = MLP_Dropout(model_params).to(DEVICE)
