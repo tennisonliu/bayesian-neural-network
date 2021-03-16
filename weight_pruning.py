@@ -11,6 +11,7 @@ from data_utils import create_data_class
 from tqdm import tqdm
 from config import DEVICE
 import copy
+import seaborn as sns
 
 def collect_weights(model, bnn=False):
     '''Collect all weights from model in a list'''
@@ -43,14 +44,14 @@ def sample_bnn_weights(mu, sigma):
     return np.random.normal(mu, sigma)
 
 def plot_histogram(weights_list, labels):
-    fig = plt.gcf()   
+    fig, ax = plt.subplots()
     fig.set_size_inches(5, 3.5) 
     for weights, label in zip(weights_list, labels):
-        plt.hist(weights, alpha=0.5, density=True, label=label, bins=200, histtype='stepfilled')
+        sns.kdeplot(weights, label=label, fill=True, clip=[-0.3, 0.3], ax=ax)
     plt.xlim(-0.3, 0.3)
-    plt.xlabel('Probability density')
+    plt.ylabel('Probability density')
     plt.legend()
-    plt.savefig('./graphs/weights_histogram.png')
+    plt.savefig('./graphs/weights_kdeplot.png', bbox_inches = 'tight')
     plt.close()
 
 def snr_plots(snr):
@@ -144,7 +145,7 @@ def main():
         [bnn_weights, mlp_weights, dropout_weights], 
         ['BNN', 'Vanilla SGD', 'Dropout']
     )
-
+    
     # plot snr densities
     snr = [compute_snr(mu, sigma) for mu, sigma in zip(bnn_mus, bnn_sigmas)]
     # snr_plots(snr)
@@ -165,7 +166,8 @@ def main():
         test_ds = create_data_class(train=False, batch_size=128, shuffle=False)
         evaluate(pruned_bnn_model.to(DEVICE), test_ds)
         evaluate(bnn_model.to(DEVICE), test_ds)
-
+    
+    
 if __name__=='__main__':
     main()
 
