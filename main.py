@@ -13,7 +13,8 @@ from plot_utils import *
 def reg_trainer():
     ''' Regression Task Trainer '''
     config = RegConfig
-    X, Y = create_data_reg(train_size=config.train_size)
+    # X, Y = create_data_reg(train_size=config.train_size)
+    X, Y = create_data_reg_gap(train_size=config.train_size)
     train_ds = PrepareData(X, Y)
     train_ds = DataLoader(train_ds, batch_size=config.batch_size, shuffle=True)
 
@@ -37,8 +38,8 @@ def reg_trainer():
 
     models = {
         'bnn_reg': BNN_Regression('bnn_regression', {**params, 'local_reparam': False}),
-        'bnn_reg_lr' : BNN_Regression('bnn_regression_lr', {**params, 'local_reparam': True}),
-        'mlp_reg': MLP_Regression('mlp_regression', {**params, 'local_reparam': False}),
+        # 'bnn_reg_lr' : BNN_Regression('bnn_regression_lr', {**params, 'local_reparam': True}),
+        # 'mlp_reg': MLP_Regression('mlp_regression', {**params, 'local_reparam': False}),
         'mcdropout_reg': MCDropout_Regression('mcdropout_regression', {**params, 'local_reparam': False}),
     }
 

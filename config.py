@@ -14,11 +14,11 @@ class RegConfig:
     epochs = 1000
     train_samples = 5
     test_samples = 100
-    num_test_points = 400
+    num_test_points = 200
     mode = 'regression'
     mixture_prior = False
-    hidden_units = 400
-    noise_tolerance = .1
+    hidden_units = 200              # CHANGED TO 100
+    noise_tolerance = .1            # log likelihood sigma
     mu_init = [-0.2, 0.2]           # range for mu 
     rho_init = [-5, -4]             # range for rho
     # prior_init = [0.5, -0, -6]      # mixture weight, log(sigma1), log(sigma2)

@@ -71,6 +71,25 @@ def create_data_reg(train_size):
 
     return xs, ys
 
+def create_data_reg_gap(train_size):
+    '''
+    Generate synth data for regression task, with gap
+    '''
+    np.random.seed(0)
+    # xs_1 = np.random.uniform(0, 0.2, size=train_size//2)
+    # xs_2 = np.random.uniform(0.3, 0.6, size=train_size//2)
+    # xs = np.concatenate([xs_1, xs_2], axis=0)
+    xs = np.random.uniform(low=0., high=0.6, size=train_size)
+    xs[xs>0.3] += 0.2
+    eps = np.random.normal(loc=0., scale=0.02, size=[train_size])
+
+    ys = xs + 0.3 * np.sin(2*np.pi * (xs + eps)) + 0.3 * np.sin(4*np.pi * (xs + eps)) + eps
+
+    xs = torch.from_numpy(xs).reshape(-1,1).float()
+    ys = torch.from_numpy(ys).reshape(-1,1).float()
+
+    return xs, ys
+
 def create_data_class(train, batch_size, shuffle):
 
     ds = DataLoader(
