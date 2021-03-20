@@ -77,7 +77,7 @@ class BNN_Classification():
             out = torch.nn.Softmax(dim=1)(self.net(X, sample=True))
             probs = probs + out / self.test_samples
         preds = torch.argmax(probs, dim=1)
-        return preds
+        return preds, probs
 
     def evaluate(self, test_loader):
         self.net.eval()
@@ -89,7 +89,7 @@ class BNN_Classification():
             for data in tqdm(test_loader):
                 X, y = data
                 X, y = X.to(DEVICE), y.to(DEVICE)
-                preds = self.sample_predict(X)
+                preds, _ = self.sample_predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total
@@ -116,7 +116,6 @@ class MLP_Classification():
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
         self.best_acc = 0.
         self.dropout = parameters['dropout']
-        self.local_reparam = parameters['local_reparam']
         self.init_net(parameters)
     
     def init_net(self, parameters):
@@ -130,16 +129,17 @@ class MLP_Classification():
             'hidden_units': self.hidden_units,
             'mode': self.mode,
             'dropout': self.dropout,
-            'local_reparam': self.local_reparam,
         }
         if self.dropout:
             self.net = MLP_Dropout(model_params).to(DEVICE)
+            print('MLP Dropout Parameters: ')
+            print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
         else:
             self.net = MLP(model_params).to(DEVICE)
+            print('MLP Parameters: ')
+            print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
         self.optimiser = torch.optim.SGD(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=100, gamma=0.5)
-        print('MLP Parameters: ')
-        print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
 
     def train_step(self, train_data):
         self.net.train()
@@ -150,10 +150,10 @@ class MLP_Classification():
             self.loss_info.backward()
             self.optimiser.step()
 
-    def predict(self, X):
+    def sample_predict(self, X):
         probs = torch.nn.Softmax(dim=1)(self.net(X))
         preds = torch.argmax(probs, dim=1)
-        return preds
+        return preds, probs
 
     def evaluate(self, test_loader):
         self.net.eval()
@@ -165,7 +165,7 @@ class MLP_Classification():
             for data in tqdm(test_loader):
                 X, y = data
                 X, y = X.to(DEVICE), y.to(DEVICE)
-                preds = self.predict(X)
+                preds, _ = self.sample_predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total
@@ -174,7 +174,6 @@ class MLP_Classification():
     def log_progress(self, step):
         write_loss(self.writer, self.loss_info, step)
         write_acc(self.writer, self.acc, step)
-
 
 class MCDropout_Classification():
     def __init__(self, label, parameters):
@@ -192,7 +191,6 @@ class MCDropout_Classification():
         self.save_model_path = f'{parameters["save_dir"]}/{label}_model.pt'
         self.best_acc = 0.
         self.dropout = parameters['dropout']
-        self.local_reparam = parameters['local_reparam']
         self.init_net(parameters)
     
     def init_net(self, parameters):
@@ -205,13 +203,12 @@ class MCDropout_Classification():
             'batch_size': self.batch_size,
             'hidden_units': self.hidden_units,
             'mode': self.mode,
-            'dropout': self.dropout,
-            'local_reparam': self.local_reparam,
+            'dropout': self.dropout
         }
         self.net = MLP_Dropout(model_params).to(DEVICE)
         self.optimiser = torch.optim.SGD(self.net.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimiser, step_size=100, gamma=0.5)
-        print('MLP Parameters: ')
+        print('MCDropout Network Parameters: ')
         print(f'batch size: {self.batch_size}, input shape: {model_params["input_shape"]}, hidden units: {model_params["hidden_units"]}, output shape: {model_params["classes"]}, lr: {self.lr}')
 
     def train_step(self, train_data):
@@ -223,18 +220,13 @@ class MCDropout_Classification():
             self.loss_info.backward()
             self.optimiser.step()
 
-    def predict(self, X):
-        probs = torch.nn.Softmax(dim=1)(self.net(X))
-        preds = torch.argmax(probs, dim=1)
-        return preds
-
     def sample_predict(self, X):
         probs = torch.zeros(size=[self.batch_size, self.classes]).to(DEVICE)
         for _ in torch.arange(self.test_samples):
             out = torch.nn.Softmax(dim=1)(self.net(X))
             probs = probs + out / self.test_samples
         preds = torch.argmax(probs, dim=1)
-        return preds
+        return preds, probs
 
     def evaluate(self, test_loader):
         self.net.eval()
@@ -247,7 +239,7 @@ class MCDropout_Classification():
             for data in tqdm(test_loader):
                 X, y = data
                 X, y = X.to(DEVICE), y.to(DEVICE)
-                preds = self.sample_predict(X)
+                preds, _ = self.sample_predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total

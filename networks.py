@@ -4,6 +4,7 @@ Components required to define Bayesian Neural Network
 -> Bayesian fully connected layer
 -> Bayesian Neural Network
 -> Non-Bayesian MLP
+-> MLP with MC Dropout
 '''
 import torch
 import math

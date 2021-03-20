@@ -4,3 +4,4 @@ __pycache__/
 /runs
 poc.py
 /mnist
+/saved_models

@@ -56,12 +56,14 @@ def read_data_rl(data_dir):
 
     return X_, Y_
 
-def create_data_reg(train_size):
+def create_data_reg(train_size, gap=False):
     '''
     Generate synth data for regression task
     '''
     np.random.seed(0)
     xs = np.random.uniform(low=0., high=0.6, size=train_size)
+    if gap:
+        xs[xs>0.3] += 0.4
     eps = np.random.normal(loc=0., scale=0.02, size=[train_size])
 
     ys = xs + 0.3 * np.sin(2*np.pi * (xs + eps)) + 0.3 * np.sin(4*np.pi * (xs + eps)) + eps
