@@ -1,3 +1,6 @@
+'''
+Helper function to generate plots.
+'''
 import os
 import numpy as np
 import matplotlib.pyplot as plt

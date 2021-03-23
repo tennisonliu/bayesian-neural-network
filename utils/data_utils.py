@@ -59,6 +59,7 @@ def read_data_rl(data_dir):
 def create_data_reg(train_size, gap=False):
     '''
     Generate synth data for regression task
+    gap = True creates artificial data clusters with gap.
     '''
     np.random.seed(0)
     xs = np.random.uniform(low=0., high=0.6, size=train_size)

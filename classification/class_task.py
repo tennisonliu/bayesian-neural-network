@@ -1,3 +1,10 @@
+'''
+Classification Task problems for three BNNs:
+1) BBB -> BNN_Classification
+2) MLP -> MLP_Classification
+3) MC-Dropout -> MCDropout_Classification
+'''
+
 import os
 import torch
 import numpy as np
@@ -6,7 +13,7 @@ from tqdm import tqdm
 
 import sys
 sys.path.append('../')
-from logger_utils import *
+from utils.logger_utils import *
 from networks import BayesianNetwork, MLP, MLP_Dropout
 from config import DEVICE
 
@@ -71,7 +78,7 @@ class BNN_Classification():
             net_loss.backward()
             self.optimiser.step()
 
-    def sample_predict(self, X):
+    def predict(self, X):
         probs = torch.zeros(size=[self.batch_size, self.classes]).to(DEVICE)
         for _ in torch.arange(self.test_samples):
             out = torch.nn.Softmax(dim=1)(self.net(X, sample=True))
@@ -89,7 +96,7 @@ class BNN_Classification():
             for data in tqdm(test_loader):
                 X, y = data
                 X, y = X.to(DEVICE), y.to(DEVICE)
-                preds, _ = self.sample_predict(X)
+                preds, _ = self.predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total
@@ -150,7 +157,7 @@ class MLP_Classification():
             self.loss_info.backward()
             self.optimiser.step()
 
-    def sample_predict(self, X):
+    def predict(self, X):
         probs = torch.nn.Softmax(dim=1)(self.net(X))
         preds = torch.argmax(probs, dim=1)
         return preds, probs
@@ -165,7 +172,7 @@ class MLP_Classification():
             for data in tqdm(test_loader):
                 X, y = data
                 X, y = X.to(DEVICE), y.to(DEVICE)
-                preds, _ = self.sample_predict(X)
+                preds, _ = self.predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total
@@ -220,7 +227,7 @@ class MCDropout_Classification():
             self.loss_info.backward()
             self.optimiser.step()
 
-    def sample_predict(self, X):
+    def predict(self, X):
         probs = torch.zeros(size=[self.batch_size, self.classes]).to(DEVICE)
         for _ in torch.arange(self.test_samples):
             out = torch.nn.Softmax(dim=1)(self.net(X))
@@ -239,7 +246,7 @@ class MCDropout_Classification():
             for data in tqdm(test_loader):
                 X, y = data
                 X, y = X.to(DEVICE), y.to(DEVICE)
-                preds, _ = self.sample_predict(X)
+                preds, _ = self.predict(X)
                 total += self.batch_size
                 correct += (preds == y).sum().item()
         self.acc = correct / total

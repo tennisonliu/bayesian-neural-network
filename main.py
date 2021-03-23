@@ -7,13 +7,13 @@ from regression.reg_task import BNN_Regression, MLP_Regression, MCDropout_Regres
 from classification.class_task import BNN_Classification, MLP_Classification, MCDropout_Classification
 from tqdm import tqdm
 from config import *
-from data_utils import *
-from plot_utils import *
+from utils.data_utils import *
+from utils.plot_utils import *
 
 def reg_trainer():
     ''' Regression Task Trainer '''
     config = RegConfig
-    X, Y = create_data_reg(train_size=config.train_size, gap=True)
+    X, Y = create_data_reg(train_size=config.train_size, gap=config.regression_clusters)
     train_ds = PrepareData(X, Y)
     train_ds = DataLoader(train_ds, batch_size=config.batch_size, shuffle=True)
 

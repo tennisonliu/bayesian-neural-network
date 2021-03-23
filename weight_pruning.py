@@ -4,10 +4,10 @@ Weight pruning experiments.
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from load_model_utils import *
+from utils.load_model_utils import *
 import seaborn as sns
 from networks import BayesianLinear
-from data_utils import create_data_class
+from utils.data_utils import create_data_class
 from tqdm import tqdm
 from config import DEVICE
 import copy
@@ -150,7 +150,7 @@ def main():
     # create weights histogram
     plot_histogram(
         [bnn_weights, mlp_weights, dropout_weights], 
-        ['BNN', 'Vanilla SGD', 'Dropout']
+        ['BBB', 'Vanilla SGD', 'Dropout']
     )
     
     # plot snr densities

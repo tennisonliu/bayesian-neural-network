@@ -7,7 +7,7 @@ import numpy as np
 import seaborn as sns
 from torch import nn
 from tqdm import tqdm
-from data_utils import create_data_class
+from utils.data_utils import create_data_class
 from classification.class_task import BNN_Classification, MLP_Classification, MCDropout_Classification
 from config import *
 
@@ -67,7 +67,7 @@ def evaluate_ece(model, test_loader):
         for data in tqdm(test_loader):
             X, y = data
             X, y = X.to(DEVICE), y.to(DEVICE)
-            _, probs = model.sample_predict(X)
+            _, probs = model.predict(X)
             probs_list.append(probs)
             labels_list.append(y)
         probs = torch.cat(probs_list)
@@ -79,7 +79,7 @@ def evaluate_ece(model, test_loader):
     return ece_criterion(probs, labels)
 
 def main():
-    np.random.seed(1)
+    np.random.seed(0)
     config = ClassConfig
     test_ds = create_data_class(train=False, batch_size=config.batch_size, shuffle=False)
 
@@ -102,10 +102,9 @@ def main():
     }
 
     models = {
-        'BNN': BNN_Classification('bnn_classification', {**params, 'local_reparam': False, 'dropout': False}),
-        'BNN-LR': BNN_Classification('bnn_classification_lr', {**params, 'local_reparam': True, 'dropout': False}),
+        'BBB': BNN_Classification('bnn_classification', {**params, 'local_reparam': False, 'dropout': False}),
+        # 'BBB-LR': BNN_Classification('bnn_classification_lr', {**params, 'local_reparam': True, 'dropout': False}),
         'MLP': MLP_Classification('mlp_classification', {**params, 'dropout': False}),
-        # 'dropout_class': MLP_Classification('dropout_classification', {**params, 'dropout': True}),
         'MC-Dropout': MCDropout_Classification('mcdropout_classification', {**params, 'dropout': True}),
         }
 
