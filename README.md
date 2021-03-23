@@ -1,6 +1,7 @@
 # Bayesian Neural Networks
 
-PyTorch Implemenation of Bayesian Neural Networks trained using *Bayes by Backprop* (BBB).
+PyTorch Implemenation of Bayesian Neural Networks trained using *Bayes by Backprop* (BBB). For more information, see our poster:
+[Bayesian Neural Network Presentation](graphs/final_graphs/BNN_Poster.pdf)
 
 Paper: Blundell, C., Cornebise, J., Kavukcuoglu, K. and Wierstra, D., 2015, June. 
         Weight uncertainty in neural network. 
@@ -32,9 +33,6 @@ python3 main.py --model [regression|classification|rl]
 The scripts `weight_pruning.py` and `compute_ece.py` perform post-hoc analysis using saved models.
 * `weight_pruning` 1) plots the distribution of weights, 2) computes SNR of BNNs, 3) evaluates performance on pruned weights.
 * `compute_ece` 1) computes the expected calibration error (ECE) of trained model, 2) plots reliability diagram.
-
-For more information, see our poster:
-[Bayesian Neural Network Presentation](graphs/final_graphs/BNN_Poster.pdf)
 
 ## TODO: 
 * Refactor `reg_task.py`, `class_task` into base and derived classes / sort out inheritance.
