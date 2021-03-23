@@ -34,7 +34,7 @@ The scripts `weight_pruning.py` and `compute_ece.py` perform post-hoc analysis u
 * `compute_ece` 1) computes the expected calibration error (ECE) of trained model, 2) plots reliability diagram.
 
 For more information, see our poster:
-![Bayesian Neural Network Presentation](graphs/final_graphs/BNN_Poster.pdf)
+![Bayesian Neural Network Presentation](graphs/final_graphs/BNN_Poster.pdf?raw=True)
 
 ## TODO: 
 * Refactor `reg_task.py`, `class_task` into base and derived classes / sort out inheritance.
