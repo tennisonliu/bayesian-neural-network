@@ -1,7 +1,8 @@
 '''
 Two Regression Models
-1) BNN -> BNN_Regression
+1) BBB -> BNN_Regression
 2) MLP -> MLP_Regression
+3) MC-Dropout -> MCDropout_Regression
 '''
 import os
 import torch
@@ -10,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import sys
 sys.path.append('../')
-from logger_utils import *
+from utils.logger_utils import *
 from networks import BayesianNetwork, MLP, MLP_Dropout
 from config import DEVICE
 

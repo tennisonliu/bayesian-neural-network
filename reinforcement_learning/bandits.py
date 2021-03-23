@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import sys
 sys.path.append('../')
-from logger_utils import *
+from utils.logger_utils import *
 from networks import BayesianNetwork, MLP
 from config import DEVICE
 

@@ -7,13 +7,13 @@ from regression.reg_task import BNN_Regression, MLP_Regression, MCDropout_Regres
 from classification.class_task import BNN_Classification, MLP_Classification, MCDropout_Classification
 from tqdm import tqdm
 from config import *
-from data_utils import *
-from plot_utils import *
+from utils.data_utils import *
+from utils.plot_utils import *
 
 def reg_trainer():
     ''' Regression Task Trainer '''
     config = RegConfig
-    X, Y = create_data_reg(train_size=config.train_size)
+    X, Y = create_data_reg(train_size=config.train_size, gap=config.regression_clusters)
     train_ds = PrepareData(X, Y)
     train_ds = DataLoader(train_ds, batch_size=config.batch_size, shuffle=True)
 
@@ -128,11 +128,11 @@ def class_trainer():
         'prior_init': config.prior_init,
         'mixture_prior':config.mixture_prior,
         'save_dir': config.save_dir,
-        'local_reparam': config.local_reparam
     }
 
     models = {
-        'bnn_class': BNN_Classification('bnn_classification', {**params, 'dropout': False}),
+        'bnn_class': BNN_Classification('bnn_classification', {**params, 'local_reparam': False, 'dropout': False}),
+        'bnn_class_lr': BNN_Classification('bnn_classification_lr', {**params, 'local_reparam': True, 'dropout': False}),
         'mlp_class': MLP_Classification('mlp_classification', {**params, 'dropout': False}),
         'dropout_class': MLP_Classification('dropout_classification', {**params, 'dropout': True}),
         'mcdropout_class': MCDropout_Classification('mcdropout_classification', {**params, 'dropout': True}),

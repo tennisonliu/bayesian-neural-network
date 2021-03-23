@@ -4,10 +4,10 @@ Weight pruning experiments.
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from load_model_utils import *
+from utils.load_model_utils import *
 import seaborn as sns
 from networks import BayesianLinear
-from data_utils import create_data_class
+from utils.data_utils import create_data_class
 from tqdm import tqdm
 from config import DEVICE
 import copy
@@ -44,32 +44,39 @@ def sample_bnn_weights(mu, sigma):
     return np.random.normal(mu, sigma)
 
 def plot_histogram(weights_list, labels):
-    fig, ax = plt.subplots()
-    fig.set_size_inches(5, 3.5) 
+    plt.style.use('seaborn-colorblind')
+    fig = plt.figure(figsize=(9, 6))
     for weights, label in zip(weights_list, labels):
-        sns.kdeplot(weights, label=label, fill=True, clip=[-0.3, 0.3], ax=ax)
+        sns.kdeplot(weights, label=label, fill=True, clip=[-0.3, 0.3])
     plt.xlim(-0.3, 0.3)
-    plt.ylabel('Probability density')
-    plt.legend()
-    plt.savefig('./graphs/weights_kdeplot.png', bbox_inches = 'tight')
-    plt.close()
+    plt.ylabel('Probability Density', fontsize=20)
+    plt.xlabel('Weight', fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.legend(loc=2, prop={'size': 18})
+    plt.savefig('./graphs/weights_histogram.pdf', dpi=5000, format='pdf', bbox_inches ='tight', pad_inches=0.1)
 
 def snr_plots(snr):
+    # TODO : UPDATE THIS TO NEW PLOTTING FORMAT
     # density plot
-    fig = plt.gcf()  
-    fig.set_size_inches(5, 4) 
+    plt.style.use('seaborn-colorblind')
+    fig = plt.figure(figsize=(9, 6))
     sns.kdeplot(data=snr, alpha=0.5, fill=True)
-    plt.xlabel('Signal-to-noise ratio')
-    plt.savefig('./graphs/snr_density.png')
-    plt.close()
+    plt.xlabel('SNR', fontsize=20)
+    plt.ylabel('Density', fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.savefig('./graphs/snr_density.pdf', dpi=5000, format='pdf', bbox_inches='tight', pad_inches=0.1)
 
     # cdf plot
     fig = plt.gcf()   
     fig.set_size_inches(5, 4) 
     sns.kdeplot(data=snr, cumulative=True, fill=False)
-    plt.xlabel('Signal-to-noise ratio')
-    plt.savefig('./graphs/snr_cdf.png')
-    plt.close()
+    plt.xlabel('SNR', fontsize=20)
+    plt.ylabel('CDF', fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.savefig('./graphs/snr_cdf.pdf', dpi=5000, format='pdf', bbox_inches='tight', pad_inches=0.1)
 
 def compute_snr(mu, sigma):
     '''Compute signal-to-noise ratio in decibels'''
@@ -129,7 +136,7 @@ def evaluate(model, test_loader):
 
 def main():
     # load models
-    bnn_model = load_bnn_class_model('./saved_models/bnn_classification_model.pt')
+    bnn_model = load_bnn_class_model('./saved_models/bnn_classification_model.pt', False)
     bnn_model.to(DEVICE)
     mlp_model = load_mlp_class_model('./saved_models/mlp_classification_model.pt')
     dropout_model = load_dropout_class_model('./saved_models/dropout_classification_model.pt')
@@ -143,7 +150,7 @@ def main():
     # create weights histogram
     plot_histogram(
         [bnn_weights, mlp_weights, dropout_weights], 
-        ['BNN', 'Vanilla SGD', 'Dropout']
+        ['BBB', 'Vanilla SGD', 'Dropout']
     )
     
     # plot snr densities
